@@ -1,0 +1,2224 @@
+{
+  "indicated-airspeed": 0.00,
+  "heading": 0.00,
+  "altitude": 342.18,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.18,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.08,
+  "heading": 268.62,
+  "altitude": 342.26,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.04,
+  "heading": 268.62,
+  "altitude": 342.35,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.01,
+  "heading": 268.62,
+  "altitude": 342.37,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 342.38,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 0.00,
+  "altitude": 342.18,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 316.19,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.46,
+  "heading": 268.62,
+  "altitude": 155.53,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.01,
+  "heading": 268.62,
+  "altitude": 102.76,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.37,
+  "heading": 268.62,
+  "altitude": 85.06,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.61,
+  "heading": 268.62,
+  "altitude": 80.43,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.80,
+  "heading": 268.62,
+  "altitude": 78.61,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.02,
+  "heading": 268.62,
+  "altitude": 78.11,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.22,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.34,
+  "heading": 268.62,
+  "altitude": 77.91,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.42,
+  "heading": 268.62,
+  "altitude": 77.89,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.51,
+  "heading": 268.62,
+  "altitude": 77.88,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.74,
+  "heading": 268.62,
+  "altitude": 77.88,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.00,
+  "heading": 268.62,
+  "altitude": 77.88,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.31,
+  "heading": 268.62,
+  "altitude": 77.88,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.59,
+  "heading": 268.62,
+  "altitude": 77.88,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.81,
+  "heading": 268.62,
+  "altitude": 77.88,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.92,
+  "heading": 268.62,
+  "altitude": 77.89,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.85,
+  "heading": 268.62,
+  "altitude": 77.89,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.90,
+  "heading": 268.62,
+  "altitude": 77.89,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.96,
+  "heading": 268.62,
+  "altitude": 77.89,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.99,
+  "heading": 268.62,
+  "altitude": 77.89,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.96,
+  "heading": 268.62,
+  "altitude": 77.89,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.92,
+  "heading": 268.62,
+  "altitude": 77.90,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.88,
+  "heading": 268.62,
+  "altitude": 77.90,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.85,
+  "heading": 268.62,
+  "altitude": 77.90,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.82,
+  "heading": 268.62,
+  "altitude": 77.90,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.79,
+  "heading": 268.62,
+  "altitude": 77.90,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.77,
+  "heading": 268.62,
+  "altitude": 77.90,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.79,
+  "heading": 268.62,
+  "altitude": 77.90,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.85,
+  "heading": 268.62,
+  "altitude": 77.91,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.91,
+  "heading": 268.62,
+  "altitude": 77.91,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.96,
+  "heading": 268.62,
+  "altitude": 77.91,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.80,
+  "heading": 268.62,
+  "altitude": 77.91,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.56,
+  "heading": 268.62,
+  "altitude": 77.91,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.52,
+  "heading": 268.62,
+  "altitude": 77.91,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.49,
+  "heading": 268.62,
+  "altitude": 77.92,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.33,
+  "heading": 268.62,
+  "altitude": 77.92,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.13,
+  "heading": 268.62,
+  "altitude": 77.92,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.99,
+  "heading": 268.62,
+  "altitude": 77.92,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.98,
+  "heading": 268.62,
+  "altitude": 77.92,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.13,
+  "heading": 268.62,
+  "altitude": 77.92,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.57,
+  "heading": 268.62,
+  "altitude": 77.93,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.83,
+  "heading": 268.62,
+  "altitude": 77.93,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.93,
+  "heading": 268.62,
+  "altitude": 77.93,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.96,
+  "heading": 268.62,
+  "altitude": 77.93,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.97,
+  "heading": 268.62,
+  "altitude": 77.93,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.97,
+  "heading": 268.62,
+  "altitude": 77.93,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.98,
+  "heading": 268.62,
+  "altitude": 77.94,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.98,
+  "heading": 268.62,
+  "altitude": 77.94,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 4.00,
+  "heading": 268.62,
+  "altitude": 77.94,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 4.04,
+  "heading": 268.62,
+  "altitude": 77.94,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 4.02,
+  "heading": 268.62,
+  "altitude": 77.94,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.67,
+  "heading": 268.62,
+  "altitude": 77.95,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.39,
+  "heading": 268.62,
+  "altitude": 77.95,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.18,
+  "heading": 268.62,
+  "altitude": 77.95,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.16,
+  "heading": 268.62,
+  "altitude": 77.95,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.24,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.23,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.30,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.41,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.70,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 4.42,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 5.49,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 6.67,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 7.78,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 9.09,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 10.59,
+  "heading": 268.62,
+  "altitude": 77.96,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 12.23,
+  "heading": 268.62,
+  "altitude": 77.97,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 14.10,
+  "heading": 268.62,
+  "altitude": 77.98,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 16.10,
+  "heading": 268.62,
+  "altitude": 77.99,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 18.35,
+  "heading": 268.62,
+  "altitude": 77.99,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 20.94,
+  "heading": 268.61,
+  "altitude": 78.00,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 23.81,
+  "heading": 268.60,
+  "altitude": 78.00,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 26.95,
+  "heading": 268.60,
+  "altitude": 78.00,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 30.20,
+  "heading": 268.60,
+  "altitude": 78.00,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 33.46,
+  "heading": 268.60,
+  "altitude": 78.00,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 36.74,
+  "heading": 268.61,
+  "altitude": 77.99,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 40.03,
+  "heading": 268.61,
+  "altitude": 77.99,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 43.19,
+  "heading": 268.59,
+  "altitude": 78.01,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 46.28,
+  "heading": 268.56,
+  "altitude": 78.06,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 49.44,
+  "heading": 268.51,
+  "altitude": 78.16,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 52.60,
+  "heading": 268.46,
+  "altitude": 78.46,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 55.72,
+  "heading": 268.39,
+  "altitude": 78.88,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 58.80,
+  "heading": 268.31,
+  "altitude": 79.34,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 61.88,
+  "heading": 268.22,
+  "altitude": 79.86,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 65.05,
+  "heading": 268.12,
+  "altitude": 80.41,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 68.27,
+  "heading": 268.02,
+  "altitude": 80.95,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 71.48,
+  "heading": 267.91,
+  "altitude": 81.31,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 74.75,
+  "heading": 267.79,
+  "altitude": 81.46,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 78.02,
+  "heading": 267.69,
+  "altitude": 81.57,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 81.32,
+  "heading": 267.58,
+  "altitude": 81.63,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 84.61,
+  "heading": 267.48,
+  "altitude": 81.64,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 87.82,
+  "heading": 267.39,
+  "altitude": 81.64,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 91.03,
+  "heading": 267.33,
+  "altitude": 81.62,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 94.21,
+  "heading": 267.30,
+  "altitude": 81.59,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 97.29,
+  "heading": 267.30,
+  "altitude": 81.55,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 100.58,
+  "heading": 267.34,
+  "altitude": 81.50,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 103.60,
+  "heading": 267.39,
+  "altitude": 81.52,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 106.61,
+  "heading": 267.62,
+  "altitude": 81.57,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 109.12,
+  "heading": 268.05,
+  "altitude": 81.63,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 112.11,
+  "heading": 268.72,
+  "altitude": 81.65,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 115.05,
+  "heading": 269.50,
+  "altitude": 81.66,
+  "latitude": 51.46,
+  "longitude": -0.44,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 117.95,
+  "heading": 270.31,
+  "altitude": 81.70,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 120.81,
+  "heading": 271.12,
+  "altitude": 81.77,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 123.59,
+  "heading": 271.88,
+  "altitude": 81.88,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 126.30,
+  "heading": 272.65,
+  "altitude": 82.05,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 129.07,
+  "heading": 272.40,
+  "altitude": 82.54,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 131.76,
+  "heading": 271.08,
+  "altitude": 83.45,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 134.34,
+  "heading": 269.76,
+  "altitude": 84.54,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 136.81,
+  "heading": 267.89,
+  "altitude": 85.38,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 139.23,
+  "heading": 266.64,
+  "altitude": 85.88,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 141.61,
+  "heading": 267.42,
+  "altitude": 86.14,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 144.29,
+  "heading": 268.26,
+  "altitude": 86.31,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 146.99,
+  "heading": 268.08,
+  "altitude": 86.42,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 149.43,
+  "heading": 267.66,
+  "altitude": 86.56,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 152.05,
+  "heading": 267.66,
+  "altitude": 86.73,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 154.66,
+  "heading": 267.66,
+  "altitude": 86.79,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 157.07,
+  "heading": 267.60,
+  "altitude": 86.32,
+  "latitude": 51.46,
+  "longitude": -0.45,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 159.49,
+  "heading": 267.51,
+  "altitude": 85.72,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 161.84,
+  "heading": 267.42,
+  "altitude": 85.62,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 163.84,
+  "heading": 267.37,
+  "altitude": 86.35,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 165.55,
+  "heading": 267.39,
+  "altitude": 88.00,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 167.12,
+  "heading": 267.47,
+  "altitude": 91.05,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 168.80,
+  "heading": 267.57,
+  "altitude": 96.03,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 170.53,
+  "heading": 267.67,
+  "altitude": 102.96,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 172.10,
+  "heading": 267.76,
+  "altitude": 111.46,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 173.38,
+  "heading": 267.83,
+  "altitude": 121.05,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.41,
+  "heading": 267.87,
+  "altitude": 131.66,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 175.35,
+  "heading": 267.87,
+  "altitude": 143.51,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 176.30,
+  "heading": 267.85,
+  "altitude": 156.84,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 177.36,
+  "heading": 267.79,
+  "altitude": 171.68,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.37,
+  "heading": 267.62,
+  "altitude": 187.66,
+  "latitude": 51.46,
+  "longitude": -0.46,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 179.20,
+  "heading": 267.38,
+  "altitude": 204.19,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 179.82,
+  "heading": 267.05,
+  "altitude": 221.11,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 180.16,
+  "heading": 266.65,
+  "altitude": 238.54,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 180.25,
+  "heading": 266.22,
+  "altitude": 258.58,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 180.29,
+  "heading": 265.94,
+  "altitude": 280.62,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 180.32,
+  "heading": 265.77,
+  "altitude": 303.07,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 180.33,
+  "heading": 265.62,
+  "altitude": 330.09,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 180.28,
+  "heading": 265.54,
+  "altitude": 359.29,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 180.05,
+  "heading": 265.40,
+  "altitude": 387.45,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 179.70,
+  "heading": 265.09,
+  "altitude": 419.22,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 179.26,
+  "heading": 264.38,
+  "altitude": 451.85,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.77,
+  "heading": 263.12,
+  "altitude": 484.92,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.44,
+  "heading": 261.04,
+  "altitude": 517.92,
+  "latitude": 51.46,
+  "longitude": -0.47,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.19,
+  "heading": 258.40,
+  "altitude": 550.39,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.16,
+  "heading": 255.93,
+  "altitude": 582.42,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.31,
+  "heading": 253.55,
+  "altitude": 614.36,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.38,
+  "heading": 251.31,
+  "altitude": 646.45,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.25,
+  "heading": 249.36,
+  "altitude": 678.89,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.03,
+  "heading": 247.78,
+  "altitude": 711.70,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 177.81,
+  "heading": 246.52,
+  "altitude": 744.90,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 177.65,
+  "heading": 245.55,
+  "altitude": 778.57,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 177.58,
+  "heading": 244.77,
+  "altitude": 812.70,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 177.53,
+  "heading": 244.09,
+  "altitude": 847.23,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 177.39,
+  "heading": 243.40,
+  "altitude": 882.20,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 177.11,
+  "heading": 242.55,
+  "altitude": 917.46,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 176.56,
+  "heading": 241.30,
+  "altitude": 952.58,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 175.87,
+  "heading": 239.78,
+  "altitude": 987.39,
+  "latitude": 51.46,
+  "longitude": -0.48,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 175.23,
+  "heading": 237.91,
+  "altitude": 1022.02,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.84,
+  "heading": 236.14,
+  "altitude": 1053.68,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.71,
+  "heading": 234.40,
+  "altitude": 1085.50,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.74,
+  "heading": 232.62,
+  "altitude": 1120.52,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.75,
+  "heading": 231.15,
+  "altitude": 1155.83,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.65,
+  "heading": 230.04,
+  "altitude": 1191.35,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.47,
+  "heading": 229.30,
+  "altitude": 1227.16,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.28,
+  "heading": 228.86,
+  "altitude": 1263.23,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.14,
+  "heading": 228.60,
+  "altitude": 1299.46,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.05,
+  "heading": 228.41,
+  "altitude": 1335.87,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 173.99,
+  "heading": 228.21,
+  "altitude": 1372.44,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 173.96,
+  "heading": 227.98,
+  "altitude": 1409.01,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.00,
+  "heading": 227.73,
+  "altitude": 1445.45,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.19,
+  "heading": 227.55,
+  "altitude": 1481.42,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.44,
+  "heading": 227.37,
+  "altitude": 1516.31,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 174.70,
+  "heading": 227.20,
+  "altitude": 1549.26,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 175.14,
+  "heading": 227.17,
+  "altitude": 1579.36,
+  "latitude": 51.46,
+  "longitude": -0.49,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 175.99,
+  "heading": 227.30,
+  "altitude": 1605.76,
+  "latitude": 51.46,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 177.10,
+  "heading": 227.54,
+  "altitude": 1628.08,
+  "latitude": 51.46,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 178.27,
+  "heading": 227.78,
+  "altitude": 1645.37,
+  "latitude": 51.46,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 179.63,
+  "heading": 227.96,
+  "altitude": 1661.61,
+  "latitude": 51.46,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 181.12,
+  "heading": 227.86,
+  "altitude": 1675.93,
+  "latitude": 51.46,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 182.71,
+  "heading": 227.63,
+  "altitude": 1688.46,
+  "latitude": 51.46,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 184.38,
+  "heading": 227.48,
+  "altitude": 1699.11,
+  "latitude": 51.46,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 186.23,
+  "heading": 227.36,
+  "altitude": 1708.77,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 187.92,
+  "heading": 227.30,
+  "altitude": 1716.26,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 189.69,
+  "heading": 227.33,
+  "altitude": 1722.84,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 191.53,
+  "heading": 227.42,
+  "altitude": 1729.17,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 193.27,
+  "heading": 227.40,
+  "altitude": 1734.40,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 195.03,
+  "heading": 227.26,
+  "altitude": 1739.46,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 196.89,
+  "heading": 226.99,
+  "altitude": 1745.33,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 198.66,
+  "heading": 226.74,
+  "altitude": 1751.96,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 200.49,
+  "heading": 226.57,
+  "altitude": 1759.80,
+  "latitude": 51.45,
+  "longitude": -0.50,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 202.23,
+  "heading": 226.47,
+  "altitude": 1769.05,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 203.83,
+  "heading": 226.39,
+  "altitude": 1779.84,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 205.16,
+  "heading": 226.27,
+  "altitude": 1791.34,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 206.32,
+  "heading": 226.01,
+  "altitude": 1804.41,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 207.47,
+  "heading": 225.60,
+  "altitude": 1818.91,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 208.60,
+  "heading": 225.13,
+  "altitude": 1834.74,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 209.80,
+  "heading": 224.72,
+  "altitude": 1852.00,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 210.99,
+  "heading": 224.48,
+  "altitude": 1870.76,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 211.92,
+  "heading": 224.50,
+  "altitude": 1887.34,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 212.77,
+  "heading": 224.72,
+  "altitude": 1904.72,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 213.40,
+  "heading": 225.04,
+  "altitude": 1919.11,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 214.39,
+  "heading": 225.81,
+  "altitude": 1943.35,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 215.23,
+  "heading": 226.74,
+  "altitude": 1966.62,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 216.02,
+  "heading": 227.83,
+  "altitude": 1990.50,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 216.76,
+  "heading": 229.05,
+  "altitude": 2015.05,
+  "latitude": 51.45,
+  "longitude": -0.51,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 217.51,
+  "heading": 230.27,
+  "altitude": 2038.15,
+  "latitude": 51.45,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 218.34,
+  "heading": 231.88,
+  "altitude": 2066.35,
+  "latitude": 51.45,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 218.93,
+  "heading": 233.57,
+  "altitude": 2093.16,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 219.42,
+  "heading": 235.47,
+  "altitude": 2120.62,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 219.89,
+  "heading": 237.56,
+  "altitude": 2148.74,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 220.42,
+  "heading": 239.98,
+  "altitude": 2179.85,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 220.85,
+  "heading": 241.82,
+  "altitude": 2209.01,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 221.36,
+  "heading": 242.82,
+  "altitude": 2238.32,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 221.96,
+  "heading": 244.06,
+  "altitude": 2267.82,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 222.38,
+  "heading": 244.88,
+  "altitude": 2297.36,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 222.80,
+  "heading": 245.32,
+  "altitude": 2327.11,
+  "latitude": 51.44,
+  "longitude": -0.52,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 223.26,
+  "heading": 245.53,
+  "altitude": 2357.59,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 223.73,
+  "heading": 245.69,
+  "altitude": 2388.78,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 224.18,
+  "heading": 245.81,
+  "altitude": 2420.55,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 224.51,
+  "heading": 245.80,
+  "altitude": 2452.51,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 224.77,
+  "heading": 245.81,
+  "altitude": 2481.90,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 225.03,
+  "heading": 245.89,
+  "altitude": 2514.03,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 225.28,
+  "heading": 246.00,
+  "altitude": 2546.06,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 225.60,
+  "heading": 246.13,
+  "altitude": 2577.88,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 225.96,
+  "heading": 246.28,
+  "altitude": 2609.66,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 226.25,
+  "heading": 246.39,
+  "altitude": 2633.44,
+  "latitude": 51.44,
+  "longitude": -0.53,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 0.00,
+  "altitude": 342.18,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.00,
+  "heading": 268.62,
+  "altitude": 316.16,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.17,
+  "heading": 268.62,
+  "altitude": 205.79,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.56,
+  "heading": 268.62,
+  "altitude": 133.61,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 0.89,
+  "heading": 268.62,
+  "altitude": 102.08,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.11,
+  "heading": 268.62,
+  "altitude": 88.30,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.31,
+  "heading": 268.62,
+  "altitude": 82.27,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.48,
+  "heading": 268.62,
+  "altitude": 79.45,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.60,
+  "heading": 268.62,
+  "altitude": 78.41,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.77,
+  "heading": 268.62,
+  "altitude": 77.92,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 1.94,
+  "heading": 268.62,
+  "altitude": 77.75,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.10,
+  "heading": 268.62,
+  "altitude": 77.67,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.18,
+  "heading": 268.62,
+  "altitude": 77.63,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.24,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.31,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.48,
+  "heading": 268.62,
+  "altitude": 77.61,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.72,
+  "heading": 268.62,
+  "altitude": 77.61,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 2.98,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.33,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.62,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.78,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.80,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.75,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.81,
+  "heading": 268.62,
+  "altitude": 77.62,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}
+{
+  "indicated-airspeed": 3.85,
+  "heading": 268.62,
+  "altitude": 77.63,
+  "latitude": 51.46,
+  "longitude": -0.43,
+  "aircraft-registration": "D-AIKN"
+}

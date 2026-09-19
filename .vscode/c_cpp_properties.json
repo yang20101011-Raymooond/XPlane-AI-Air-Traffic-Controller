@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Mac (C++)",
+            "includePath": [
+                "${workspaceFolder}/SDK/CHeaders",
+                "${workspaceFolder}/SDK/CHeaders/XPLM",
+                "${workspaceFolder}/SDK/CHeaders/Widgets",
+                "${workspaceFolder}/SDK/CHeaders/Wrappers",
+                "${workspaceFolder}"
+            ],
+            "defines": [
+                "APL=1", "IBM=0", "LIN=0",
+                "XPLM200=1", "XPLM210=1", "XPLM300=1", "XPLM301=1",
+                "XPLM303=1", "XPLM400=1", "XPLM411=1", "XPLM420=1", "XPLM430=1"
+            ],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+        }
+    ],
+    "version": 4
+}
