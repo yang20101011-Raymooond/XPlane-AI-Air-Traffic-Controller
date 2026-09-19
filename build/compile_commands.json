@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/Users/aic06/AI-ATC/build",
-  "command": "/usr/bin/c++  -I/Users/aic06/AI-ATC/SDK/CHeaders -I/Users/aic06/AI-ATC/SDK/CHeaders/XPLM -I/Users/aic06/AI-ATC/SDK/CHeaders/Widgets -I/Users/aic06/AI-ATC/SDK/CHeaders/Wrappers -F/Users/aic06/AI-ATC/SDK/Libraries/Mac -O3 -DNDEBUG -std=gnu++17 -arch arm64 -fvisibility=hidden -fvisibility-inlines-hidden -DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1 -DXPLM303=1 -DXPLM400=1 -DXPLM411=1 -DXPLM420=1 -DXPLM430=1 -DAPL=1 -DIBM=0 -DLIN=0 -fPIC -fvisibility=hidden -o CMakeFiles/read_IAS.dir/read-IAS.cpp.o -c /Users/aic06/AI-ATC/read-IAS.cpp",
-  "file": "/Users/aic06/AI-ATC/read-IAS.cpp",
-  "output": "CMakeFiles/read_IAS.dir/read-IAS.cpp.o"
-}
-]
