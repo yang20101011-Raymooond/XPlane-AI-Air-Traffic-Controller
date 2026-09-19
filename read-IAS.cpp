@@ -131,7 +131,7 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
         XPLMDebugString("[readIAS] Failed to open debug_log.txt for writing.\n");
     }
 
-    return 1.0f; // Return -1.0f to indicate that the callback should be called again in 1 second;
+    return 1.0f; // Return -1.0f to indicate that callback should be called again in 1 second;
 }
 
 
