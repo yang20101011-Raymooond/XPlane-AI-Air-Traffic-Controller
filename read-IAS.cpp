@@ -6,9 +6,11 @@
 #include "XPLMProcessing.h"
 
 #include <cstring>
-#include <stdio.h>//snprintf
+#include <stdio.h> //snprintf
 #include <fstream>
 #include <cstdlib>
+#include <filesystem>
+#include <string>
 using namespace std;
 
 XPLMDataRef ias_dataref = NULL;
@@ -38,7 +40,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     aircraft_Registration_dataref = XPLMFindDataRef("sim/aircraft/view/acf_tailnum");
 
     XPLMDebugString("[readIAS] XPluginStart called.\n");
- 
+
     if(ias_dataref == NULL || hdg_dataref == NULL || alt_dataref == NULL || elevation_dataref == NULL || latitude_dataref == NULL || longitude_dataref == NULL || aircraft_Registration_dataref == NULL) {
         if(ias_dataref == NULL) {
             XPLMDebugString("[readIAS] Failed to find dataref for IAS.\n");
@@ -113,10 +115,35 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     "}\n", 
     IAS, HDG, ALT, ELEVATION, LATITUDE, LONGITUDE, aircraft_Registration);
     
-    bool DirectoryStatus = result:system("if [ -d "~/AI-ATC" ] && chmod 755 "~/AI-ATC");
+    const char* home = std::getenv("HOME"); // Get the user's home directory
+
+    if(home == nullptr) {    // Judge if home directory is gotten
+        XPLMDebugString("[readIAS] Failed to get HOME directory.\n");
+        return 1.0f;
+    }
+
+    std::filesystem::path ai_atc_dir = std::filesystem::path(home) / "AI-ATC"; 
+
+    if(!std::filesystem::exists(ai_atc_dir)) { //If do not exist
+        if(!std::filesystem::create_directories(ai_atc_dir)) { // Then do it
+        XPLMDebugString("[readIAS] Failed to create AI-ATC directory.\n"); // For some reason the creation is failed : (
+        return 1.0f;
+    }
+    XPLMDebugString("[readIAS] AI-ATC directory created.\n");
+    }
+
+    std::filesystem::permissions( // Grant permissions needed for the user of the directory, "~/AI-ATC".
+        ai_atc_dir,
+        std::filesystem::perms::owner_all |
+        std::filesystem::perms::group_read |
+        std::filesystem::perms::group_exec |
+        std::filesystem::perms::others_read |
+        std::filesystem::perms::others_exec,
+        std::filesystem::perm_options::replace
+    );
     
-    //write to json file
-    ofstream flight_data("~/AI-ATC/flight_data.json");
+    //write to json file 
+    ofstream flight_data(ai_atc_dir / "flight_data.json"); //To Raymond: Code logic below remains unchanged but the directory processing logic. No more shit mountain.(i guess)
     if (flight_data.is_open() == true){
         flight_data << json_buffer;
         flight_data.close();
@@ -126,7 +153,7 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     
     //Debug
     XPLMDebugString(json_buffer);
-    ofstream debug_file("~/AI-ATC/flight_debug.log", ios::app);
+    ofstream debug_file(ai_atc_dir / "flight_debug.log", ios::app);
     if(debug_file.is_open() == true){
         debug_file << json_buffer;
         debug_file.close();
