@@ -8,6 +8,7 @@
 #include <cstring>
 #include <stdio.h>//snprintf
 #include <fstream>
+#include <cstdlib>
 using namespace std;
 
 XPLMDataRef ias_dataref = NULL;
@@ -111,9 +112,11 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     "  \"aircraft-registration\": \"%s\"\n"
     "}\n", 
     IAS, HDG, ALT, ELEVATION, LATITUDE, LONGITUDE, aircraft_Registration);
-        
+    
+    bool DirectoryStatus = result:system("if [ -d "~/AI-ATC" ] && chmod 755 "~/AI-ATC");
+    
     //write to json file
-    ofstream flight_data("/Users/aic06/AI-ATC/flight_data.json");
+    ofstream flight_data("~/AI-ATC/flight_data.json");
     if (flight_data.is_open() == true){
         flight_data << json_buffer;
         flight_data.close();
@@ -123,7 +126,7 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     
     //Debug
     XPLMDebugString(json_buffer);
-    ofstream debug_file("/Users/aic06/AI-ATC/flight_debug.log", ios::app);
+    ofstream debug_file("~/AI-ATC/flight_debug.log", ios::app);
     if(debug_file.is_open() == true){
         debug_file << json_buffer;
         debug_file.close();
