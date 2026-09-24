@@ -127,7 +127,7 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     if(!std::filesystem::exists(ai_atc_dir)) { //If do not exist
         if(!std::filesystem::create_directories(ai_atc_dir)) { // Then do it
         XPLMDebugString("[readIAS] Failed to create AI-ATC directory.\n"); // For some reason the creation is failed : (
-        return 1.0f;
+        // return 1.0f;
     }
     XPLMDebugString("[readIAS] AI-ATC directory created.\n");
     }
