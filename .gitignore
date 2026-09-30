@@ -1,0 +1,26 @@
+# ---- Python 虚拟环境 ----
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# ---- 编译产物 ----
+build/
+*.o
+*.dSYM/
+hello
+
+# ---- macOS ----
+.DS_Store
+
+# ---- 编辑器 ----
+.vscode/
+
+# ---- 运行时数据（每帧被插件覆写，不该进仓库）----
+flight_data.json
+flight_debug.log
+debug_log.txt
+clearance.json
+
+# ---- 第三方 SDK ----
+SDK/
