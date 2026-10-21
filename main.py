@@ -9,6 +9,8 @@ import whisper
 import sounddevice
 from openai import OpenAI
 
+from .route_finder import find_route
+
 API_KEY = os.environ["LLM_API_KEY_AI_ATC_V1"]
 client = OpenAI(
     api_key = API_KEY,
@@ -83,6 +85,11 @@ print(">>> ---- Enter Depature Airport ICAO code: ")
 DEP_ICAO = input().strip().upper()
 print(">>> ---- Enter Depature Runway(Make Sure runway exists): ")
 DEP_RWY = input().strip().upper()
+print(">>> ---- Enter Arrival Airport ICAO code: ")
+ARR_ICAO = input().strip().upper()
+
+ROUTE_arr = find_route(DEP_ICAO, ARR_ICAO)
+
 
 possibleSID = get_SID(DEP_ICAO, DEP_RWY)
 SID_text = "SIDs available for this runway are: " + ", ".join(possibleSID)

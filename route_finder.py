@@ -981,11 +981,13 @@ if __name__ == "__main__":
     import time
 
     dep = sys.argv[1] if len(sys.argv) > 1 else "EDDF"
-    arr = sys.argv[2] if len(sys.argv) > 2 else "LOWW"
+    arr = sys.argv[2] if len(sys.argv) > 2 else "EGLL"
     t0 = time.time()
     r = find_route(dep, arr)
     print(f"{dep} -> {arr}  ({len(r)} 个点, {time.time() - t0:.2f}s)")
-    print(r)
+    # 不要直接 print(r): list 的 repr 会给每个字符串加单引号.
+    # 用 join 拼成字符串输出, 首尾的方括号也一起去掉, 读起来就是一条正常航路.
+    print(" ".join(r))
     if len(r) >= 3:
         print("SID 终点:", r[1], "| STAR 起点:", r[-2])
     print("带航路名:", route_with_airways(r))
