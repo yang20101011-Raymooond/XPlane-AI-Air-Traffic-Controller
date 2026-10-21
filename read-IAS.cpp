@@ -15,6 +15,7 @@ XPLMDataRef ias_dataref = NULL;
 XPLMDataRef hdg_dataref = NULL;
 XPLMDataRef alt_dataref = NULL;
 XPLMDataRef agl_dataref = NULL;
+XPLMDataRef vertical_speed_dataref = NULL;
 XPLMDataRef latitude_dataref = NULL;
 XPLMDataRef longitude_dataref = NULL;
 XPLMDataRef wind_speed_dataref = NULL;
@@ -35,6 +36,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     hdg_dataref = XPLMFindDataRef("sim/flightmodel/position/mag_psi");
     alt_dataref = XPLMFindDataRef("sim/cockpit2/gauges/indicators/altitude_ft_pilot");
     agl_dataref = XPLMFindDataRef("sim/flightmodel/position/y_agl");
+    vertical_speed_dataref = XPLMFindDataRef("sim/cockpit2/gauges/indicators/vvi_fpm_pilot");
     wind_speed_dataref = XPLMFindDataRef("sim/cockpit2/gauges/indicators/wind_speed_kts");
     wind_heading_dataref = XPLMFindDataRef("sim/cockpit2/gauges/indicators/wind_heading_deg_mag");
     latitude_dataref = XPLMFindDataRef("sim/flightmodel/position/latitude");
@@ -44,7 +46,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     XPLMDebugString("[readIAS] XPluginStart called.\n");
  
     if(ias_dataref == NULL || hdg_dataref == NULL || alt_dataref == NULL || agl_dataref == NULL 
-        || latitude_dataref == NULL || longitude_dataref == NULL || wind_speed_dataref == NULL || wind_heading_dataref == NULL|| aircraft_Registration_dataref == NULL) {
+        || vertical_speed_dataref == NULL || latitude_dataref == NULL || longitude_dataref == NULL || wind_speed_dataref == NULL || wind_heading_dataref == NULL|| aircraft_Registration_dataref == NULL) {
         if(ias_dataref == NULL) {
             XPLMDebugString("[readIAS] Failed to find dataref for IAS.\n");
         }
@@ -56,6 +58,9 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
         }
         if(agl_dataref == NULL){
             XPLMDebugString("[readIAS] Failed to find dataref for ElEVATION.\n");
+        }
+        if(vertical_speed_dataref == NULL){
+            XPLMDebugString("[readIAS] Failed to find dataref for VERTICAL SPEED.\n");
         }
         if(latitude_dataref == NULL) {
             XPLMDebugString("[readIAS] Failed to find dataref for LAT.\n");
@@ -82,7 +87,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
 
 float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void *inRefcon)
 {
-    float IAS, HDG, ALT, AGL, WINDSPD, WINDHDG;
+    float IAS, HDG, ALT, AGL, WINDSPD, WINDHDG, VERTICALSPEED;
     double LATITUDE, LONGITUDE;
     char aircraft_Registration[40];//char array to hold the aircraft registration string, Registration dataref is 40 bytes long.
 
@@ -97,6 +102,9 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     }
     if(agl_dataref != NULL){
         AGL = XPLMGetDataf(agl_dataref);//get above ground level from dataref IN METERS
+    }
+    if(vertical_speed_dataref != NULL){
+        VERTICALSPEED = XPLMGetDataf(vertical_speed_dataref);//get vertical speed from dataref
     }
     if(latitude_dataref != NULL) {
         LATITUDE = XPLMGetDataf(latitude_dataref);//get latitude from dataref
@@ -124,13 +132,14 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     "  \"heading\": %.2f,\n"
     "  \"altitude\": %.2f,\n"
     "  \"above ground level\": %.2f,\n"
+    "  \"vertical speed\": %.2f,\n"
     "  \"latitude\": %.2f,\n"
     "  \"longitude\": %.2f,\n"
     "  \"wind speed\": %.2f,\n"
     "  \"wind heading\": %.2f,\n"
     "  \"aircraft-registration\": \"%s\"\n"
     "}\n", 
-    IAS, HDG, ALT, AGL, LATITUDE, LONGITUDE, WINDSPD, WINDHDG, aircraft_Registration);
+    IAS, HDG, ALT, AGL, VERTICALSPEED, LATITUDE, LONGITUDE, WINDSPD, WINDHDG, aircraft_Registration);
         
     //write to json file
     ofstream flight_data("/Users/aic06/AI-ATC/flight_data.json");
@@ -151,7 +160,7 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
         XPLMDebugString("[readIAS] Failed to open debug_log.txt for writing.\n");
     }
 
-    return 1.0f; // Return -1.0f to indicate that callback should be called again in 1 second;
+    return 5.0f; // Return 5.0f to indicate that callback should be called again in 5 seconds;
 }
 
 

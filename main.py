@@ -25,19 +25,9 @@ user_input = queue.Queue()##create a queue for input
 class ATCState:
     def __init__(self):
         self.active = False
-isBelowFL100 = ATCState()   
+isInitialclimbClearance = ATCState()   
 isClearanced = ATCState()
-
-##functinon for the sub thread for monitoring input, prevent waiting in main loop
-def preInput():
-    while True:
-        try:
-            user_input.put(input())##put input value to the queue, if none, continue waiting
-        except EOFError:
-            break
-
-##start a sub thread/process for user input
-threading.Thread(target=preInput, daemon=True).start()
+isInitialClimbed = ATCState()
 
         
 SID_cache = {} ##dictionary for storing SIDs read from CIFP navigation document of xplane
@@ -81,6 +71,36 @@ def remindReadback(REGISTRATION):
     elif(n == 4):
         print(REGISTRATION, ", Are you with me, readback and confirm")
 
+def Readback(REGISTRATION):
+    n = random.randint(1, 2)
+    if(n == 1):
+        print(REGISTRATION, ", Readback Correct, clearance granted, contact when ready for departure")
+    elif(n == 2):
+        print(REGISTRATION, ", Readbac、" \
+        " Confirmed, contact when ready for departure")
+
+print(">>> ---- Enter Depature Airport ICAO code: ")
+DEP_ICAO = input().strip().upper()
+print(">>> ---- Enter Depature Runway(Make Sure runway exists): ")
+DEP_RWY = input().strip().upper()
+
+possibleSID = get_SID(DEP_ICAO, DEP_RWY)
+SID_text = "SIDs available for this runway are: " + ", ".join(possibleSID)
+print("[debug] SIDs available for this runway are: ", SID_text)
+
+
+##functinon for the sub thread for monitoring input, prevent waiting in main loop
+def preInput():
+    while True:
+        try:
+            user_input.put(input())##ptut input value to the queue, if none, continue waiting
+        except EOFError:
+            break
+
+##start a sub thread/process for user input
+threading.Thread(target=preInput, daemon=True).start()
+
+
 SAMPLE_RATE = 16000
 isRecording = False
 audio_data = []
@@ -98,6 +118,11 @@ while True:
             flight_data = json.load(f)
             agl_m = flight_data["above ground level"]## AGL get from dataref is in meter
             agl = agl_m * 3.28 ##convert into feetv
+            ias = flight_data["indicated-airspeed"]
+            hdg = flight_data["heading"]
+            alt = flight_data["altitude"]
+            vs = flight_data["vertical speed"]
+
             AIRCRAFT_REG = flight_data["aircraft-registration"]
     except:
         time.sleep(0.5)
@@ -141,23 +166,25 @@ while True:
             audio_data = []
     
     if(agl >= 500):
-        if(isBelowFL100.active == False):
-            response = client.chat.completions.create(
-                model="deepseek-flash",
-                messages=[
-                    {"role": "system", "content": "You are Air Traffic Controller for Xplane User, "
-                    "frame your words in professional aviation radio communication form and command the "
-                    "player to climb and maintain to initial , based on information given. But do not act too"
-                    "mechanical, speak like real ATC. Only respond in one command, use numbers for numbers"},
-                    {"role": "user", "content": json.dumps(flight_data) + str(init_alt)},
-                ],
-                stream=False,
-                reasoning_effort="high",
-                extra_body={"thinking": {"type": "enabled"}}
-            )
+        if(isInitialclimbClearance.active == False):
+            
+            print(AIRCRAFT_REG, ", Climb and maintain ", init_alt, ", contact departure")
+            last_remind_initC = time.perf_counter()
+            
+            isInitialclimbClearance.active = True
 
-            print(response.choices[0].message.content)
-            isBelowFL100.active = True
+    now = time.perf_counter()
+    if(agl >= 500 and agl <= init_alt):
+        if(isInitialClimbed.active == False):
+            if(vs > 200):
+                isInitialClimbed.active = True
+            else:
+                if(now - last_remind_initC >= 60):
+                    print(AIRCRAFT_REG, ", I repeat, Climb and maintain ", init_alt, ", you are currently not climbing")
+                pass
+        pass
+
+
 
     if(input_Pilot != None and pilotSays != None):
         if(isClearanced.active == True):
@@ -168,7 +195,8 @@ while True:
                     "frame your words in professional aviation radio communication form and commands."
                     "Player have entered requests, respond professionally and add greetings if needed"
                     "or imitated real ATC. You will recieve both flight data and players request, flight clearance"
-                    "will also be attached. Players may speech to text, if you recieve"
+                    "will also be attached.r"
+                    " Players may speech to text, if you recieve"
                     "text formed numbers and ICAO phonetic alphabet, response normally without text form"},
                     {"role": "user", "content": json.dumps(flight_data) + input_Pilot + 
                      pilotSays + json.dumps(clearance_data)},
@@ -198,6 +226,7 @@ while True:
                     '    "callsign": "...",\n'
                     '    "runway": "...",\n'
                     '    "SID": "...",\n'
+                    '    "Waypoints in route": "...",\n'
                     '    "initial_climb_ft": n,\n'
                     '    "cruise_altitude_ft": n,\n'
                     '    "squawk": "..."\n'
@@ -210,8 +239,11 @@ while True:
                     "But if the response is not a clearance, "
                     "respond the 'data' as {},"
                     "You will recieve both flight data and players request.Players may speech to text, if you recieve"
-                    "text formed numbers and ICAO phonetic alphabet, response normally without text form"},
-                    {"role": "user", "content": json.dumps(flight_data) + input_Pilot + pilotSays},
+                    "text formed numbers and ICAO phonetic alphabet, response normally without text form"
+                    
+                    "YOU MUST CHOOSE THE SIDS GIVEN BELOW, DO NOT MAKE UO SIDS, Consider the routing to decide"
+                    "which SID to assign"},
+                    {"role": "user", "content": json.dumps(flight_data) + input_Pilot + pilotSays + SID_text},
                 ],
                 response_format={"type": "json_object"},
                 stream=False,
@@ -226,8 +258,9 @@ while True:
             clearance = result["data"]
             
             input_Pilot = None
-            
             ##write clearance to json file, clearance is already similar to json format, sub json fie of "data"
+            
+            
             if(clearance.get('runway')):
                 with open("clearance.json", "w", encoding="utf-8") as f:
                     json.dump(clearance, f, ensure_ascii=False, indent=2)
@@ -250,15 +283,18 @@ while True:
                             isRecording = False
                             AUDIO = np.concatenate(audio_data, axis=0)
                             AUDIO = AUDIO.flatten()
+                            print("[debug] readback 音频秒数:", len(AUDIO) / SAMPLE_RATE)
                             result = speech_model.transcribe(AUDIO, language = "en", initial_prompt="ATC radio communication. User may say alphabet in Alpha Bravo "
                             "Charlie Delta Echo Foxtrot Golf Hotel India Juliett Kilo Lima "
                             "Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform "
-                            "Victor Whiskey Xray Yankee Zulu.", fp16=False)
+                            "Victor Whiskey Xray Yankee Zulu.", condition_on_previous_text= False, fp16=False)
                             pilotSays = result["text"]
                             print("YOU: ", pilotSays)
                             
                             audio_data = []
                     
+                    time.sleep(0.02)
+
                     now = time.time()
                     if(now - last_time >= 45):
                         remindReadback(AIRCRAFT_REG)
@@ -266,20 +302,20 @@ while True:
 
                 with open("/Users/aic06/AI-ATC/clearance.json") as f:
                         clearance_data = json.load(f)
-                response = client.chat.completions.create(
-                    model="deepseek-flash",
-                    messages=[
-                        {"role": "system", "content": "You are Air Traffic Controller for Xplane User, "
-                        "frame your words in professional aviation radio communication form and command the "
-                        "Play have readback your clearance, check if the readback is correct and response"},
-                        {"role": "user", "content": json.dumps(flight_data) + json.dumps(clearance_data) + pilotSays},
-                        ],
-                    stream=False,
-                    reasoning_effort="high",
-                    extra_body={"thinking": {"type": "enabled"}}
-                )
-                result = response.choices[0].message.content
-                print(result)
+                callsign = clearance_data["callsign"]
+                sid = clearance_data["SID"]
+                waypoints = clearance_data["Waypoints in route"]
+                squawk = clearance_data["squawk"]
+                destination = clearance_data["Destination"]
+                squawk = clearance_data["squawk"]
+                
+                if((callsign in pilotSays) or (sid in pilotSays) or (squawk in pilotSays) or 
+                   (destination in pilotSays) or (squawk in pilotSays) or ("readback" in pilotSays) or ("roger" in pilotSays)):
+                    Readback(AIRCRAFT_REG)
+                else:
+                    print(AIRCRAFT_REG, ", negative, I repeat, clear to ", destination, " routing as fieled ", waypoints, ", climb via ", sid, 
+                          ", squawk ", squawk, ", readback not necessary, contact when ready for departure")
+                
                 isClearanced.active = True
 
 
