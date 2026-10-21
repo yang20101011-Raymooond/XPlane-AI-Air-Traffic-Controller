@@ -4,21 +4,21 @@
 #include "XPLMDataAccess.h"
 #include "XPLMUtilities.h"
 #include "XPLMProcessing.h"
+#include "XPLMNavigation.h"
 
 #include <cstring>
-#include <stdio.h> //snprintf
+#include <stdio.h>//snprintf
 #include <fstream>
-#include <cstdlib>
-#include <filesystem>
-#include <string>
 using namespace std;
 
 XPLMDataRef ias_dataref = NULL;
 XPLMDataRef hdg_dataref = NULL;
 XPLMDataRef alt_dataref = NULL;
-XPLMDataRef elevation_dataref = NULL;
+XPLMDataRef agl_dataref = NULL;
 XPLMDataRef latitude_dataref = NULL;
 XPLMDataRef longitude_dataref = NULL;
+XPLMDataRef wind_speed_dataref = NULL;
+XPLMDataRef wind_heading_dataref = NULL;
 XPLMDataRef aircraft_Registration_dataref = NULL;
 
 float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void *inRefcon);
@@ -34,14 +34,17 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     ias_dataref = XPLMFindDataRef("sim/flightmodel/position/indicated_airspeed");
     hdg_dataref = XPLMFindDataRef("sim/flightmodel/position/mag_psi");
     alt_dataref = XPLMFindDataRef("sim/cockpit2/gauges/indicators/altitude_ft_pilot");
-    elevation_dataref = XPLMFindDataRef("sim/flightmodel/position/elevation");
+    agl_dataref = XPLMFindDataRef("sim/flightmodel/position/y_agl");
+    wind_speed_dataref = XPLMFindDataRef("sim/cockpit2/gauges/indicators/wind_speed_kts");
+    wind_heading_dataref = XPLMFindDataRef("sim/cockpit2/gauges/indicators/wind_heading_deg_mag");
     latitude_dataref = XPLMFindDataRef("sim/flightmodel/position/latitude");
     longitude_dataref = XPLMFindDataRef("sim/flightmodel/position/longitude");
     aircraft_Registration_dataref = XPLMFindDataRef("sim/aircraft/view/acf_tailnum");
 
     XPLMDebugString("[readIAS] XPluginStart called.\n");
-
-    if(ias_dataref == NULL || hdg_dataref == NULL || alt_dataref == NULL || elevation_dataref == NULL || latitude_dataref == NULL || longitude_dataref == NULL || aircraft_Registration_dataref == NULL) {
+ 
+    if(ias_dataref == NULL || hdg_dataref == NULL || alt_dataref == NULL || agl_dataref == NULL 
+        || latitude_dataref == NULL || longitude_dataref == NULL || wind_speed_dataref == NULL || wind_heading_dataref == NULL|| aircraft_Registration_dataref == NULL) {
         if(ias_dataref == NULL) {
             XPLMDebugString("[readIAS] Failed to find dataref for IAS.\n");
         }
@@ -51,8 +54,8 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
         if(alt_dataref == NULL) {
             XPLMDebugString("[readIAS] Failed to find dataref for ALT.\n");
         }
-        if(elevation_dataref == NULL){
-            XPLMDebugString("[readIAS] Failed to find dataref for Elevation.\n");
+        if(agl_dataref == NULL){
+            XPLMDebugString("[readIAS] Failed to find dataref for ElEVATION.\n");
         }
         if(latitude_dataref == NULL) {
             XPLMDebugString("[readIAS] Failed to find dataref for LAT.\n");
@@ -60,21 +63,27 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
         if(longitude_dataref == NULL) {
             XPLMDebugString("[readIAS] Failed to find dataref for LON.\n");
         }
+        if(wind_speed_dataref == NULL){
+            XPLMDebugString("[readIAS] Failed to find dataref for WINDSPD.\n");
+        }
+        if(wind_heading_dataref == NULL){
+            XPLMDebugString("[readIAS] Failed to find dataref for WINDHDG.\n");
+        }
         if(aircraft_Registration_dataref == NULL){
-            XPLMDebugString("[readIAS] Failed to find dataref for .\n");
+            XPLMDebugString("[readIAS] Failed to find dataref for REG.\n");
         }
         return 0; // failed to initialize the plugin
     } 
     
     //Functions registered at FlightloopCallback will be called every frame in xplane main;
-    XPLMRegisterFlightLoopCallback(ReadAllCallback, -1.0f, NULL); // Register the flight loop callback to read all data every frame
+    XPLMRegisterFlightLoopCallback(ReadAllCallback, 1.0f, NULL); // Register the flight loop callback to read all data every frame
     return 1; // successfully initialized the plugin
 }
 
 float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void *inRefcon)
 {
-    float IAS, HDG, ALT;
-    double LATITUDE, LONGITUDE, ELEVATION;
+    float IAS, HDG, ALT, AGL, WINDSPD, WINDHDG;
+    double LATITUDE, LONGITUDE;
     char aircraft_Registration[40];//char array to hold the aircraft registration string, Registration dataref is 40 bytes long.
 
     if(ias_dataref != NULL) {
@@ -86,14 +95,20 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     if(alt_dataref != NULL) {
         ALT = XPLMGetDataf(alt_dataref);//get altitude from dataref
     }
-    if(elevation_dataref != NULL){
-        ELEVATION = XPLMGetDataf(elevation_dataref);
+    if(agl_dataref != NULL){
+        AGL = XPLMGetDataf(agl_dataref);//get above ground level from dataref IN METERS
     }
     if(latitude_dataref != NULL) {
         LATITUDE = XPLMGetDataf(latitude_dataref);//get latitude from dataref
     }
     if(longitude_dataref != NULL) {
         LONGITUDE = XPLMGetDataf(longitude_dataref);//get longitude from dataref
+    }
+    if(wind_speed_dataref != NULL){
+        WINDSPD = XPLMGetDataf(wind_speed_dataref);//get windspeed from dataref
+    }
+    if(wind_heading_dataref != NULL){
+        WINDHDG = XPLMGetDataf(wind_heading_dataref);//get windheading from dataref
     }
     if(aircraft_Registration_dataref != NULL) {
         XPLMGetDatab(aircraft_Registration_dataref, aircraft_Registration, 0, sizeof(aircraft_Registration));//get aircraft registration from dataref
@@ -102,48 +117,23 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
         //sizeof(aircraft_Registration) = 40;
     }
 
-    char json_buffer[256];
+    char json_buffer[1024];
     snprintf(json_buffer, sizeof(json_buffer), 
     "{\n"
     "  \"indicated-airspeed\": %.2f,\n"
     "  \"heading\": %.2f,\n"
     "  \"altitude\": %.2f,\n"
-    "  \"elevation\": %.2f,\n"
+    "  \"above ground level\": %.2f,\n"
     "  \"latitude\": %.2f,\n"
     "  \"longitude\": %.2f,\n"
+    "  \"wind speed\": %.2f,\n"
+    "  \"wind heading\": %.2f,\n"
     "  \"aircraft-registration\": \"%s\"\n"
     "}\n", 
-    IAS, HDG, ALT, ELEVATION, LATITUDE, LONGITUDE, aircraft_Registration);
-    
-    const char* home = std::getenv("HOME"); // Get the user's home directory
-
-    if(home == nullptr) {    // Judge if home directory is gotten
-        XPLMDebugString("[readIAS] Failed to get HOME directory.\n");
-        return 1.0f;
-    }
-
-    std::filesystem::path ai_atc_dir = std::filesystem::path(home) / "AI-ATC"; 
-
-    if(!std::filesystem::exists(ai_atc_dir)) { //If do not exist
-        if(!std::filesystem::create_directories(ai_atc_dir)) { // Then do it
-        XPLMDebugString("[readIAS] Failed to create AI-ATC directory.\n"); // For some reason the creation is failed : (
-        // return 1.0f;
-    }
-    XPLMDebugString("[readIAS] AI-ATC directory created.\n");
-    }
-
-    std::filesystem::permissions( // Grant permissions needed for the user of the directory, "~/AI-ATC".
-        ai_atc_dir,
-        std::filesystem::perms::owner_all |
-        std::filesystem::perms::group_read |
-        std::filesystem::perms::group_exec |
-        std::filesystem::perms::others_read |
-        std::filesystem::perms::others_exec,
-        std::filesystem::perm_options::replace
-    );
-    
-    //write to json file 
-    ofstream flight_data(ai_atc_dir / "flight_data.json"); //To Raymond: Code logic below remains unchanged but the directory processing logic. No more shit mountain.(i guess)
+    IAS, HDG, ALT, AGL, LATITUDE, LONGITUDE, WINDSPD, WINDHDG, aircraft_Registration);
+        
+    //write to json file
+    ofstream flight_data("/Users/aic06/AI-ATC/flight_data.json");
     if (flight_data.is_open() == true){
         flight_data << json_buffer;
         flight_data.close();
@@ -153,7 +143,7 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     
     //Debug
     XPLMDebugString(json_buffer);
-    ofstream debug_file(ai_atc_dir / "flight_debug.log", ios::app);
+    ofstream debug_file("/Users/aic06/AI-ATC/flight_debug.log", ios::app);
     if(debug_file.is_open() == true){
         debug_file << json_buffer;
         debug_file.close();
