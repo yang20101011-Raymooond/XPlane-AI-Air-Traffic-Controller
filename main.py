@@ -173,7 +173,7 @@ while True:
             if(clearance_data.get("runway")):
                 init_alt = clearance_data["initial_climb_ft"]
                 crusie_alt_ft = clearance_data["cruise_altitude_ft"]
-                crusie_alt_fl = crusie_alt_ft / 100
+                crusie_alt_fl = int(crusie_alt_ft / 100)
             else:
                 init_alt = 6000 ##set defult value
     except:
@@ -181,7 +181,7 @@ while True:
 
     input_Pilot = None
     try:
-        input_Pilot = user_input.get_nowait()
+        input_Pilot = user_input.get(timeout=0.02)##get input value from the queue, if none, continue waiting
         if(input_Pilot != None):
             print("YOU: ", input_Pilot)
     except queue.Empty:
@@ -236,7 +236,7 @@ while True:
                 isCruiseClimbed.active = True
             else:
                 if(now - last_remind_cruiseC >= 120):
-                    print(AIRCRAFT_REG, ", I repeat, Climb and maintain ", crusie_alt_fl, ", you are currently not climbing, no readback required")
+                    print(AIRCRAFT_REG, ", I repeat, Climb and maintain FL", crusie_alt_fl, ", you are currently not climbing, no readback required")
                 pass
 
     if(input_Pilot != None and pilotSays != None):
