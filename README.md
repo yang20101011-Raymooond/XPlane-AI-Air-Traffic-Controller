@@ -13,7 +13,7 @@
 - **`main.py`** 读写的 `flight_data.json` / `clearance.json`：默认脚本所在目录，同样认 `AIATC_DIR`。
   两边默认指向同一目录，正常情况下**什么都不用改**；只有 X-Plane 和仓库不在同一位置时才会用到这个变量。
 - 导航数据（CIFP 等）：`XP_DATA_DIR`；插件部署：`XP_PLUGIN_DIR`。
-- 要保证跨机能跑：**X-Plane 启动前** `export AIATC_DIR=...`（如果非默认），然后 `./bootstrap.sh` 重编一次。
+- 要保证跨机能跑：**X-Plane 启动前** `export AIATC_DIR=...`（**如果非默认,否则不需要**），然后 `./bootstrap.sh` 重编一次。
 
 换目录的完整做法：
 
