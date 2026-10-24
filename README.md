@@ -4,7 +4,7 @@
 
 ---
 
-## One note to use: Xplane must be installed on ~/
+## One note to use: Xplane must be installed on ~/   OTHERWISE YOU NEED TO EXPORT PATH
 ## 异地开发注意（2026-10-24）
 
 原硬编码路径已全部去掉：
