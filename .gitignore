@@ -1,4 +1,4 @@
-# ---- Python 虚拟环境 ----
+# ---- Python 虚拟环境（每台机器各自重建） ----
 .venv/
 venv/
 __pycache__/
@@ -14,13 +14,18 @@ hello
 .DS_Store
 
 # ---- 编辑器 ----
-.vscode/
+# .vscode/ 现在入库：tasks.json / settings.json 已改成跨机可用的写法（SDK 用相对路径）
+.vscode/*.log
 
-# ---- 运行时数据（每帧被插件覆写，不该进仓库）----
+# ---- 运行时数据（每帧被插件覆写 / 本机临时产物，不进仓库） ----
 flight_data.json
 flight_debug.log
 debug_log.txt
 clearance.json
 
-# ---- 第三方 SDK ----
-SDK/
+# ---- 手工编译的临时文件 ----
+*.bak.*
+manual_demo
+
+# 注意：SDK/ 现在是入库的（官方 X-Plane SDK 4.3.0，约 7 MB）。
+# 不要把它加回忽略列表，否则新机编译会找不到头文件和 framework。

@@ -1,0 +1,7 @@
+# SDK 里的 framework 含符号链接（Versions/Current -> …），按原生方式入库，
+# 避免 Windows 检出时变成普通文件导致链接失败。
+SDK/Libraries/Mac/** -text
+*.framework/**      -text
+*.dat               -text
+routes.db           -text
+*.xpl               binary

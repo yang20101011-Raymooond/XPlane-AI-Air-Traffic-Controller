@@ -41,8 +41,12 @@ import re
 
 # ============================ 路径常量 ============================
 
-# X-Plane 12 导航数据库根目录, 修改这里即可换到其他安装位置
-XP_DATA_DIR = "/Users/aic06/X-Plane 12/Resources/default data"
+# X-Plane 12 导航数据库根目录。
+# 换机器/换安装位置时：设环境变量 XP_DATA_DIR，或直接改下面这一行。
+XP_DATA_DIR = os.environ.get(
+    "XP_DATA_DIR",
+    os.path.expanduser("~/X-Plane 12/Resources/default data"),
+)
 CIFP_DIR = os.path.join(XP_DATA_DIR, "CIFP")          # 每个机场一个 .dat 文件
 AWY_PATH = os.path.join(XP_DATA_DIR, "earth_awy.dat")  # 航路网络
 FIX_PATH = os.path.join(XP_DATA_DIR, "earth_fix.dat")  # 航路点坐标

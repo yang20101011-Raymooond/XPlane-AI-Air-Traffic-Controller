@@ -9,7 +9,8 @@ import whisper
 import sounddevice
 from openai import OpenAI
 
-from .route_finder import find_route
+from route_finder import find_route
+from getSIDandOthers import *
 
 API_KEY = os.environ["LLM_API_KEY_AI_ATC_V1"]
 client = OpenAI(
@@ -30,39 +31,16 @@ class ATCState:
 isInitialclimbClearance = ATCState()   
 isClearanced = ATCState()
 isInitialClimbed = ATCState()
+isClearToCruiseAlt = ATCState()
+isCruiseClimbed = ATCState()
 
-        
-SID_cache = {} ##dictionary for storing SIDs read from CIFP navigation document of xplane
 
-def get_SID(icao, runway):
-    if(not icao or not runway):
-        return []
-
-    key = f"{icao}|{runway}"
-    if(key in SID_cache):
-        return SID_cache[key]
-    
-    path = os.path.join(CIFP_DIR, f"{icao.upper()}.dat")
-    sids = set()
-    if(os.path.exists(path) == True):
-        try:
-            with open(path, encoding="utf-8", errors="ignore") as f:
-                for i in f:            ##To Tim: 遍历each line in f, python的for循环的特殊部份
-                    if(not i.startswith("SID:")):
-                        continue
-                    arr = i.split(",")##split the line into seperate string each ",", and store them into an array
-                    if(len(arr) < 4):
-                        continue
-                    sid_name = arr[2].strip()##SID name is the 3rd element in array we converted, 
-                    ##originally in text its the 3rd part, strip to prevent space at the end
-                    rw_name = arr[3].strip()##simialr reason~
-                    if(rw_name == runway and sid_name != None):
-                        sids.add(sid_name)#use set since it auto delete the repeated sections
-        except OSError:
-            return []
-    result = sorted(sids)
-    SID_cache[key] = result
-    return result
+def clr_Readback(REGISTRATION):
+    n = random.randint(1, 2)
+    if(n == 1):
+        print(REGISTRATION, ", Readback Correct, clearance granted, contact when ready for departure")
+    elif(n == 2):
+        print(REGISTRATION, ", Readback Confirmed, contact when ready for departure")
 
 def remindReadback(REGISTRATION):
     n = random.randint(1, 4)
@@ -72,29 +50,69 @@ def remindReadback(REGISTRATION):
         print(REGISTRATION, ", Please confirm and readback")
     elif(n == 4):
         print(REGISTRATION, ", Are you with me, readback and confirm")
-
+    
 def Readback(REGISTRATION):
     n = random.randint(1, 2)
     if(n == 1):
-        print(REGISTRATION, ", Readback Correct, clearance granted, contact when ready for departure")
+        print(REGISTRATION, ", Readback Correct")
     elif(n == 2):
-        print(REGISTRATION, ", Readbac、" \
-        " Confirmed, contact when ready for departure")
+        print(REGISTRATION, ", Readback Confirmed, contact when ready for departure")
+
+def _func_Readback(): 
+    global isRecording, audio_data
+    last_time = time.perf_counter()
+    pilotSays = None
+    audio_data = []
+    while(pilotSays == None):
+        try:##again detect input in threading
+            input_Pilot = None
+            input_Pilot = user_input.get_nowait()
+            if(input_Pilot != None):
+                print("YOU: ", input_Pilot)
+        except queue.Empty:
+            pass
+        if(input_Pilot == "r" or input_Pilot == "R"):
+            if(isRecording == False):
+                isRecording = True
+                print("<<< Recording...")
+            else:
+                isRecording = False
+                AUDIO = np.concatenate(audio_data, axis=0)
+                AUDIO = AUDIO.flatten()
+                #print("[debug] readback 音频秒数:", len(AUDIO) / SAMPLE_RATE)
+                result = speech_model.transcribe(AUDIO, language = "en", initial_prompt="ATC radio communication. User may say alphabet in Alpha Bravo "
+                "Charlie Delta Echo Foxtrot Golf Hotel India Juliett Kilo Lima "
+                "Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform "
+                "Victor Whiskey Xray Yankee Zulu.", condition_on_previous_text= False, fp16=False)
+                pilotSays = result["text"]
+                print("YOU: ", pilotSays)
+                            
+                audio_data = []
+                    
+        time.sleep(0.02)
+
+        now = time.perf_counter()
+        if(now - last_time >= 90):
+            remindReadback(AIRCRAFT_REG)
+            last_time = time.perf_counter()
+    return
 
 print(">>> ---- Enter Depature Airport ICAO code: ")
 DEP_ICAO = input().strip().upper()
-print(">>> ---- Enter Depature Runway(Make Sure runway exists): ")
-DEP_RWY = input().strip().upper()
 print(">>> ---- Enter Arrival Airport ICAO code: ")
 ARR_ICAO = input().strip().upper()
 
-ROUTE_arr = find_route(DEP_ICAO, ARR_ICAO)
+ROUTE_arr = find_route(DEP_ICAO, ARR_ICAO)##return a list of waypoints, the first is departure airport, the last is arrival airport, 
+##the second is SID endpoint, the second last is STAR startpoint
 
+possibleSID = get_SID(DEP_ICAO, ROUTE_arr[1], CIFP_DIR)##return a list of possible SID for the departure airport and the SID endpoint
+SID_text = "SIDs available are: " + ", ".join(possibleSID)
 
-possibleSID = get_SID(DEP_ICAO, DEP_RWY)
-SID_text = "SIDs available for this runway are: " + ", ".join(possibleSID)
-print("[debug] SIDs available for this runway are: ", SID_text)
+print("[debug] Route is: ", ROUTE_arr)
+print("[debug] SIDs available for this route are: ", SID_text)
 
+SID_CON_RW = match_sid_rw(possibleSID, CIFP_DIR, DEP_ICAO)###return a dictionary of SID and its corresponding runway, key is SID, value is runway
+print("[debug] SID and its corresponding runway possible are: ", json.dumps(SID_CON_RW))
 
 ##functinon for the sub thread for monitoring input, prevent waiting in main loop
 def preInput():
@@ -119,6 +137,9 @@ audioStream = sounddevice.InputStream(samplerate=SAMPLE_RATE, channels=1, callba
 audioStream.start()
 
 print(">>> Press R to speak")
+
+
+
 while True:
     try:
         with open("/Users/aic06/AI-ATC/flight_data.json") as f:
@@ -140,6 +161,8 @@ while True:
             clearance_data = json.load(f)
             if(clearance_data.get("runway")):
                 init_alt = clearance_data["initial_climb_ft"]
+                crusie_alt_ft = clearance_data["cruise_altitude_ft"]
+                crusie_alt_fl = crusie_alt_ft / 100
             else:
                 init_alt = 6000 ##set defult value
     except:
@@ -175,23 +198,35 @@ while True:
     if(agl >= 500):
         if(isInitialclimbClearance.active == False):
             
-            print(AIRCRAFT_REG, ", Climb and maintain ", init_alt, ", contact departure")
+            print(AIRCRAFT_REG, ", Climb and maintain ", init_alt, ", for further information, contact departure")
             last_remind_initC = time.perf_counter()
-            
+            _func_Readback()##start a sub thread for readback, if no readback after 90 seconds, remind them to readback
             isInitialclimbClearance.active = True
 
     now = time.perf_counter()
-    if(agl >= 500 and agl <= init_alt):
+    if(agl >= 500 and alt <= init_alt):
         if(isInitialClimbed.active == False):
             if(vs > 200):
                 isInitialClimbed.active = True
             else:
-                if(now - last_remind_initC >= 60):
-                    print(AIRCRAFT_REG, ", I repeat, Climb and maintain ", init_alt, ", you are currently not climbing")
+                if(now - last_remind_initC >= 120):
+                    print(AIRCRAFT_REG, ", I repeat, Climb and maintain ", init_alt, ", you are currently not climbing, no readback required")
                 pass
-        pass
-
-
+        else:
+            if(init_alt - alt <= 200):
+                if(isClearToCruiseAlt.active == False):
+                    print(AIRCRAFT_REG, ", Climb and maintain to crusie altitude", crusie_alt_fl)
+                    last_remind_cruiseC = time.perf_counter()
+                    _func_Readback()
+                    isClearToCruiseAlt.active = True
+    if(agl >= 500 and alt > init_alt and alt < crusie_alt_ft):
+        if(isCruiseClimbed.active == False):
+            if(vs > 200):
+                isCruiseClimbed.active = True
+            else:
+                if(now - last_remind_cruiseC >= 120):
+                    print(AIRCRAFT_REG, ", I repeat, Climb and maintain ", crusie_alt_fl, ", you are currently not climbing, no readback required")
+                pass
 
     if(input_Pilot != None and pilotSays != None):
         if(isClearanced.active == True):
@@ -237,6 +272,7 @@ while True:
                     '    "initial_climb_ft": n,\n'
                     '    "cruise_altitude_ft": n,\n'
                     '    "squawk": "..."\n'
+                    '    "QNH": "..."\n'
                     '    "Destination": "..."\n'
                     "  }\n"
                     "}\n"
@@ -248,9 +284,9 @@ while True:
                     "You will recieve both flight data and players request.Players may speech to text, if you recieve"
                     "text formed numbers and ICAO phonetic alphabet, response normally without text form"
                     
-                    "YOU MUST CHOOSE THE SIDS GIVEN BELOW, DO NOT MAKE UO SIDS, Consider the routing to decide"
-                    "which SID to assign"},
-                    {"role": "user", "content": json.dumps(flight_data) + input_Pilot + pilotSays + SID_text},
+                    "YOU MUST CHOOSE THE SIDS GIVEN BELOW, THEN THE RUWAY YOU GIVE SHOULD CORRESPOND TO THE SID YOU CHOOSE, THE CORRELATION WILL BE GIVEN, DO NOT MAKE UO SIDS OR RUNWAYS"
+                    "YOUR ROUTE GIVEN MUST BE WHAT I GIVE YOU, DO NOT MAKE UP ROUTES"},
+                    {"role": "user", "content": SID_text + json.dumps(SID_CON_RW) + json.dumps(ROUTE_arr) + json.dumps(flight_data) + input_Pilot + pilotSays},
                 ],
                 response_format={"type": "json_object"},
                 stream=False,
@@ -269,6 +305,11 @@ while True:
             
             
             if(clearance.get('runway')):
+
+                ###check if the waypoints in route is the same as the one we generated, if not, replace it with the one we generated
+                if(clearance["Waypoints in route"].split() != ROUTE_arr):
+                    clearance["Waypoints in route"] = " ".join(ROUTE_arr)
+                
                 with open("clearance.json", "w", encoding="utf-8") as f:
                     json.dump(clearance, f, ensure_ascii=False, indent=2)
 
@@ -290,7 +331,7 @@ while True:
                             isRecording = False
                             AUDIO = np.concatenate(audio_data, axis=0)
                             AUDIO = AUDIO.flatten()
-                            print("[debug] readback 音频秒数:", len(AUDIO) / SAMPLE_RATE)
+                            #print("[debug] readback 音频秒数:", len(AUDIO) / SAMPLE_RATE)
                             result = speech_model.transcribe(AUDIO, language = "en", initial_prompt="ATC radio communication. User may say alphabet in Alpha Bravo "
                             "Charlie Delta Echo Foxtrot Golf Hotel India Juliett Kilo Lima "
                             "Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform "
@@ -303,7 +344,7 @@ while True:
                     time.sleep(0.02)
 
                     now = time.time()
-                    if(now - last_time >= 45):
+                    if(now - last_time >= 90):
                         remindReadback(AIRCRAFT_REG)
                         last_time = time.time()
 
@@ -318,7 +359,7 @@ while True:
                 
                 if((callsign in pilotSays) or (sid in pilotSays) or (squawk in pilotSays) or 
                    (destination in pilotSays) or (squawk in pilotSays) or ("readback" in pilotSays) or ("roger" in pilotSays)):
-                    Readback(AIRCRAFT_REG)
+                    clr_Readback(AIRCRAFT_REG)
                 else:
                     print(AIRCRAFT_REG, ", negative, I repeat, clear to ", destination, " routing as fieled ", waypoints, ", climb via ", sid, 
                           ", squawk ", squawk, ", readback not necessary, contact when ready for departure")

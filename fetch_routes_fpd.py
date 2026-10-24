@@ -5,6 +5,7 @@
 # import 区：导入「模块」。import 只是把工具领进来，本身不执行任何网络/文件操作。
 # ═════════════════════════════════════════════════════════════
 import json              # JSON 模块：json.loads(文本→对象) / json.dumps(对象→文本)
+import os                # os.path.expanduser / 拼接脚本所在目录
 import sqlite3           # SQLite 驱动，Python 标准库自带，不用 pip 安装
 import sys               # 与解释器有关的东西：sys.argv 是命令行参数列表
 import urllib.error      # urllib 家族的「错误类」：HTTPError 等
@@ -14,7 +15,9 @@ import urllib.request    # urllib 家族的「发请求」：Request 对象 / ur
 
 BASE = "https://api.flightplandatabase.com"   # API 根地址：协议 https + 域名，没有结尾斜杠
                                               # 后面拼路径时自己加 "/"，所以这里别带 "/"
-DB_PATH = "/Users/aic06/AI-ATC/routes.db"     # 数据库文件路径：SQLite 的「库」就是这个文件本身
+# 数据库文件路径：SQLite 的「库」就是这个文件本身。
+# 放在脚本同目录，仓库搬到哪台机器都能用。
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "routes.db")
 
 ORIGIN = "EDDF"   # 默认起飞机场 ICAO 四字码（法兰克福）
 DEST   = "ZBAA"   # 默认降落机场 ICAO 四字码（北京首都）

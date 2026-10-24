@@ -1,0 +1,24 @@
+# AI-ATC Python 依赖
+#
+# 由 macOS / Python 3.12 环境导出（.venv 不可克隆，新机按这个文件重建）。
+# 重建：python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+#
+# 版本是"已知能跑"的锁定值；在新机上如果装不上（换平台/换 Python 版本），
+# 把对应包的 == 改成 >= 或直接删掉版本号再试。
+
+# ---- 语音输入（麦克风） ----
+sounddevice==0.5.6          # 录音；调用系统音频设备，macOS 首次运行需在「系统设置 > 隐私与安全性 > 麦克风」里授权
+numpy==2.5.3                # 音频帧、数值计算（whisper/torch 也依赖它）
+
+# ---- 语音识别 ----
+openai-whisper==20250625    # 本地 Whisper 转写
+torch==2.14.0               # whisper 的推理后端（体积大，约 1-2 GB；pip 默认装 CPU 版即可）
+
+# ---- 大模型（生成 ATC 回复） ----
+openai==3.19.2              # 兼容 OpenAI 接口的客户端；本项目指向 DeepSeek（base_url=https://api.deepseek.com）
+
+# ---- 数据库 / 航路 ----
+# sqlite3 是 Python 标准库，无需安装；requests / urllib 也不需要额外包
+
+# ---- whisper 的间接依赖（列出来是为了版本可复现，pip 会自动装，一般不用手动改） ----
+tiktoken==0.14.0

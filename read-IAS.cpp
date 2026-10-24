@@ -20,6 +20,7 @@ XPLMDataRef latitude_dataref = NULL;
 XPLMDataRef longitude_dataref = NULL;
 XPLMDataRef wind_speed_dataref = NULL;
 XPLMDataRef wind_heading_dataref = NULL;
+XPLMDataRef qnh_dataref = NULL;
 XPLMDataRef aircraft_Registration_dataref = NULL;
 
 float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void *inRefcon);
@@ -41,6 +42,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
     wind_heading_dataref = XPLMFindDataRef("sim/cockpit2/gauges/indicators/wind_heading_deg_mag");
     latitude_dataref = XPLMFindDataRef("sim/flightmodel/position/latitude");
     longitude_dataref = XPLMFindDataRef("sim/flightmodel/position/longitude");
+    qnh_dataref = XPLMFindDataRef("sim/weather/aircraft/qnh_pas");
     aircraft_Registration_dataref = XPLMFindDataRef("sim/aircraft/view/acf_tailnum");
 
     XPLMDebugString("[readIAS] XPluginStart called.\n");
@@ -74,6 +76,9 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
         if(wind_heading_dataref == NULL){
             XPLMDebugString("[readIAS] Failed to find dataref for WINDHDG.\n");
         }
+        if(qnh_dataref == NULL){
+            XPLMDebugString("[readIAS] Failed to find dataref for QNH.\n");
+        }
         if(aircraft_Registration_dataref == NULL){
             XPLMDebugString("[readIAS] Failed to find dataref for REG.\n");
         }
@@ -87,7 +92,7 @@ PLUGIN_API int XPluginStart(char *outName, char *outSig, char *outDesc)
 
 float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void *inRefcon)
 {
-    float IAS, HDG, ALT, AGL, WINDSPD, WINDHDG, VERTICALSPEED;
+    float IAS, HDG, ALT, AGL, WINDSPD, WINDHDG, QNH, VERTICALSPEED;
     double LATITUDE, LONGITUDE;
     char aircraft_Registration[40];//char array to hold the aircraft registration string, Registration dataref is 40 bytes long.
 
@@ -118,6 +123,9 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     if(wind_heading_dataref != NULL){
         WINDHDG = XPLMGetDataf(wind_heading_dataref);//get windheading from dataref
     }
+    if(qnh_dataref != NULL){
+        QNH = XPLMGetDataf(qnh_dataref);//get qnh from dataref
+    }
     if(aircraft_Registration_dataref != NULL) {
         XPLMGetDatab(aircraft_Registration_dataref, aircraft_Registration, 0, sizeof(aircraft_Registration));//get aircraft registration from dataref
         //this is used to read strings datarefs, the 0 is the offset, and sizeof(aircraft_Registration) is the bytes to read
@@ -137,9 +145,10 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     "  \"longitude\": %.2f,\n"
     "  \"wind speed\": %.2f,\n"
     "  \"wind heading\": %.2f,\n"
+    "  \"QNH\": %.2f,\n"
     "  \"aircraft-registration\": \"%s\"\n"
     "}\n", 
-    IAS, HDG, ALT, AGL, VERTICALSPEED, LATITUDE, LONGITUDE, WINDSPD, WINDHDG, aircraft_Registration);
+    IAS, HDG, ALT, AGL, VERTICALSPEED, LATITUDE, LONGITUDE, WINDSPD, WINDHDG, QNH, aircraft_Registration);
         
     //write to json file
     ofstream flight_data("/Users/aic06/AI-ATC/flight_data.json");
