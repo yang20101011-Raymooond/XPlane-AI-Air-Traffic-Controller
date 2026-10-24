@@ -4,7 +4,7 @@
 
 ---
 
-
+## One note to use: Xplane must be installed on ~/   OTHERWISE YOU NEED TO EXPORT PATH
 ## 异地开发注意（2026-10-24）
 
 原硬编码路径已全部去掉：
@@ -13,7 +13,7 @@
 - **`main.py`** 读写的 `flight_data.json` / `clearance.json`：默认脚本所在目录，同样认 `AIATC_DIR`。
   两边默认指向同一目录，正常情况下**什么都不用改**；只有 X-Plane 和仓库不在同一位置时才会用到这个变量。
 - 导航数据（CIFP 等）：`XP_DATA_DIR`；插件部署：`XP_PLUGIN_DIR`。
-- 要保证跨机能跑：**X-Plane 启动前** `export AIATC_DIR=...`（如果非默认），然后 `./bootstrap.sh` 重编一次。
+- 要保证跨机能跑：**X-Plane 启动前** `export AIATC_DIR=...`（**如果非默认,否则不需要**），然后 `./bootstrap.sh` 重编一次。
 
 换目录的完整做法：
 
@@ -32,7 +32,8 @@ cmake --build build
 ### 1. 装依赖 + 编译（一条命令）
 
 ```bash
-cd XPlane-AI-Air-Traffic-Controller
+cd AI-ATC                                        #(recommended to name it as filed)
+chmod +x bootstrap.sh                            #if runing ./bootstrap.sh directly is not allowed
 ./bootstrap.sh                                   # X-Plane 默认在 ~/X-Plane 12
 ./bootstrap.sh "/Volumes/外接盘/X-Plane 12"       # 装别处时传路径
 ```
