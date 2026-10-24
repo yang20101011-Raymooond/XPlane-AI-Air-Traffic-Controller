@@ -39,6 +39,10 @@ if(NOT XP_PLUGIN_DIR)
 endif()
 set(XP_PLUGIN_DIR "${XP_PLUGIN_DIR}" CACHE PATH "X-Plane 12 插件目录（用于自动部署）")
 
+# ---- 共享数据目录（flight_data.json 等插件↔Python 交换文件的位置） --------
+# 默认 = 本仓库根目录；运行时可用环境变量 AIATC_DIR 覆盖（不必重编）。
+set(AIATC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "插件与 Python 交换数据文件的目录")
+
 find_library(XPLM_LIB XPLM PATHS "${XPLANE_SDK}/Libraries/Mac" NO_DEFAULT_PATH)
 find_library(XPWIDGETS_LIB XPWidgets PATHS "${XPLANE_SDK}/Libraries/Mac" NO_DEFAULT_PATH)
 if(NOT XPLM_LIB OR NOT XPWIDGETS_LIB)
@@ -59,6 +63,7 @@ function(xp_plugin NAME SUBDIR)
         CXX_STANDARD_REQUIRED ON
         VISIBILITY_INLINES_HIDDEN ON
         CXX_VISIBILITY_PRESET hidden
+        COMPILE_DEFINITIONS "AIATC_DIR_DEFAULT=\"${AIATC_DIR}\""
     )
     target_compile_options(${NAME} PRIVATE ${XPLM_VERSION_MACROS} ${PLATFORM_DEFS} -fPIC -fvisibility=hidden)
     target_include_directories(${NAME} PRIVATE ${XPLANE_INCLUDES})

@@ -7,9 +7,28 @@
 #include "XPLMNavigation.h"
 
 #include <cstring>
+#include <cstdlib>//getenv
 #include <stdio.h>//snprintf
 #include <fstream>
 using namespace std;
+
+// 共享数据文件所在目录（flight_data.json / flight_debug.log）。
+// 优先级：环境变量 AIATC_DIR > 编译期默认值（CMake 传入）> 当前目录。
+// 换机器时：启动 X-Plane 前 export AIATC_DIR=/你的/路径/AI-ATC，或重新执行 ./bootstrap.sh 重编。
+#ifndef AIATC_DIR_DEFAULT
+#define AIATC_DIR_DEFAULT "."
+#endif
+static const char *aiactcDir()
+{
+    const char *env = getenv("AIATC_DIR");
+    return (env && env[0]) ? env : AIATC_DIR_DEFAULT;
+}
+static string aiactcPath(const char *filename)
+{
+    string dir = aiactcDir();
+    if(!dir.empty() && dir.back() != '/') dir += '/';
+    return dir + filename;
+}
 
 XPLMDataRef ias_dataref = NULL;
 XPLMDataRef hdg_dataref = NULL;
@@ -151,7 +170,7 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     IAS, HDG, ALT, AGL, VERTICALSPEED, LATITUDE, LONGITUDE, WINDSPD, WINDHDG, QNH, aircraft_Registration);
         
     //write to json file
-    ofstream flight_data("/Users/aic06/AI-ATC/flight_data.json");
+    ofstream flight_data(aiactcPath("flight_data.json").c_str());
     if (flight_data.is_open() == true){
         flight_data << json_buffer;
         flight_data.close();
@@ -161,7 +180,7 @@ float ReadAllCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLast
     
     //Debug
     XPLMDebugString(json_buffer);
-    ofstream debug_file("/Users/aic06/AI-ATC/flight_debug.log", ios::app);
+    ofstream debug_file(aiactcPath("flight_debug.log").c_str(), ios::app);
     if(debug_file.is_open() == true){
         debug_file << json_buffer;
         debug_file.close();

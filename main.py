@@ -20,7 +20,18 @@ client = OpenAI(
 
 speech_model = whisper.load_model("small")
 
-CIFP_DIR = "/Users/aic06/X-Plane 12/Resources/default data/CIFP"
+## 数据文件（flight_data.json / clearance.json）所在目录：默认脚本所在目录。
+## 插件那边同样认 AIATC_DIR 环境变量，两边指到同一个目录即可。
+AIATC_DIR = os.environ.get("AIATC_DIR", os.path.dirname(os.path.abspath(__file__)))
+FLIGHT_DATA_PATH = os.path.join(AIATC_DIR, "flight_data.json")
+CLEARANCE_PATH = os.path.join(AIATC_DIR, "clearance.json")
+
+## X-Plane 导航数据目录：默认 ~/X-Plane 12/Resources/default data，可用环境变量 XP_DATA_DIR 覆盖。
+XP_DATA_DIR = os.environ.get(
+    "XP_DATA_DIR",
+    os.path.expanduser("~/X-Plane 12/Resources/default data"),
+)
+CIFP_DIR = os.path.join(XP_DATA_DIR, "CIFP")
 
 user_input = queue.Queue()##create a queue for input
 
@@ -142,7 +153,7 @@ print(">>> Press R to speak")
 
 while True:
     try:
-        with open("/Users/aic06/AI-ATC/flight_data.json") as f:
+        with open(FLIGHT_DATA_PATH) as f:
             flight_data = json.load(f)
             agl_m = flight_data["above ground level"]## AGL get from dataref is in meter
             agl = agl_m * 3.28 ##convert into feetv
@@ -157,7 +168,7 @@ while True:
         continue
 
     try:
-        with open("/Users/aic06/AI-ATC/clearance.json") as f:
+        with open(CLEARANCE_PATH) as f:
             clearance_data = json.load(f)
             if(clearance_data.get("runway")):
                 init_alt = clearance_data["initial_climb_ft"]
@@ -310,7 +321,7 @@ while True:
                 if(clearance["Waypoints in route"].split() != ROUTE_arr):
                     clearance["Waypoints in route"] = " ".join(ROUTE_arr)
                 
-                with open("clearance.json", "w", encoding="utf-8") as f:
+                with open(CLEARANCE_PATH, "w", encoding="utf-8") as f:
                     json.dump(clearance, f, ensure_ascii=False, indent=2)
 
                 last_time = time.time()
@@ -348,7 +359,7 @@ while True:
                         remindReadback(AIRCRAFT_REG)
                         last_time = time.time()
 
-                with open("/Users/aic06/AI-ATC/clearance.json") as f:
+                with open(CLEARANCE_PATH) as f:
                         clearance_data = json.load(f)
                 callsign = clearance_data["callsign"]
                 sid = clearance_data["SID"]

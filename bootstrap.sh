@@ -67,7 +67,7 @@ if [ ! -d "$PLUGIN_DIR" ]; then
 fi
 "$CMAKE" -S . -B build -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-    -DXP_PLUGIN_DIR="$PLUGIN_DIR"
+    -DXP_PLUGIN_DIR="$PLUGIN_DIR" -DAIATC_DIR="$(pwd)"
 "$CMAKE" --build build
 
 cat <<EOF
@@ -75,6 +75,7 @@ cat <<EOF
 ✔ 完成。日常用法：
     source .venv/bin/activate           # 进入虚拟环境
     export LLM_API_KEY_AI_ATC_V1=...    # main.py 需要这个环境变量（DeepSeek API key，不要写进文件）
+    export AIATC_DIR="$(pwd)"           # 插件与 Python 共用的数据目录（不设则用编译时嵌入的本仓库路径）
     export XP_DATA_DIR="$XP_ROOT/Resources/default data"   # 可选，默认就是 ~/X-Plane 12/...
     python main.py
 

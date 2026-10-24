@@ -5,7 +5,24 @@
 ---
 
 
-## ！！！main.py和read-IAS.cpp还是硬编码，包括json读取，异地务必全部更改
+## 异地开发注意（2026-10-24）
+
+原硬编码路径已全部去掉：
+
+- **`read-IAS.cpp`** 写 JSON 的目录：编译期由 CMake 传入（= 仓库根），运行时可用环境变量 `AIATC_DIR` 覆盖。
+- **`main.py`** 读写的 `flight_data.json` / `clearance.json`：默认脚本所在目录，同样认 `AIATC_DIR`。
+  两边默认指向同一目录，正常情况下**什么都不用改**；只有 X-Plane 和仓库不在同一位置时才会用到这个变量。
+- 导航数据（CIFP 等）：`XP_DATA_DIR`；插件部署：`XP_PLUGIN_DIR`。
+- 要保证跨机能跑：**X-Plane 启动前** `export AIATC_DIR=...`（如果非默认），然后 `./bootstrap.sh` 重编一次。
+
+换目录的完整做法：
+
+```bash
+export AIATC_DIR="$PWD"                              # 插件和 Python 共用数据目录（默认已是仓库根，可不设）
+export XP_DATA_DIR="$HOME/X-Plane 12/Resources/default data"
+cmake -S . -B build -DXP_PLUGIN_DIR="$HOME/X-Plane 12/Resources/plugins"
+cmake --build build
+```
 
 ## 异地开发：三步
 
