@@ -15,9 +15,13 @@ using namespace std;
 // 共享数据文件所在目录（flight_data.json / flight_debug.log）。
 // 优先级：环境变量 AIATC_DIR > 编译期默认值（CMake 传入）> 当前目录。
 // 换机器时：启动 X-Plane 前 export AIATC_DIR=/你的/路径/AI-ATC，或重新执行 ./bootstrap.sh 重编。
+//You don't need to export AIATC_DIR if ALL of you files are together with CMakeList.txt under AI-ATC(in system path recommended)
+//since cmake will give the path afer running bootstrap.sh
 #ifndef AIATC_DIR_DEFAULT
 #define AIATC_DIR_DEFAULT "."
 #endif
+
+//if AIATC_DIR_DEFAULT is empty, aiactcDir will be automatically AIATC_DIR, which is set in Cmake, the AI-ATC folder path
 static const char *aiactcDir()
 {
     const char *env = getenv("AIATC_DIR");
