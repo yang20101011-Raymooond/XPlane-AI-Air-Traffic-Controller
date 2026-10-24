@@ -21,7 +21,7 @@ using namespace std;
 #define AIATC_DIR_DEFAULT "."
 #endif
 
-//if AIATC_DIR_DEFAULT is empty, aiactcDir will be automatically AIATC_DIR, which is set in Cmake, the AI-ATC folder path
+//if AIATC_DIR is empty, aiactcDir will be automatically AIATC_DIR_DEFAULT, which is current AI-ATC folder path
 static const char *aiactcDir()
 {
     const char *env = getenv("AIATC_DIR");
