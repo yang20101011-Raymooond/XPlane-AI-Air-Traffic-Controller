@@ -32,7 +32,8 @@ cmake --build build
 ### 1. 装依赖 + 编译（一条命令）
 
 ```bash
-cd XPlane-AI-Air-Traffic-Controller
+cd AI-ATC                                        #(recommended to name it as filed)
+chmod +x bootstrap.sh                            #if runing ./bootstrap.sh directly is not allowed
 ./bootstrap.sh                                   # X-Plane 默认在 ~/X-Plane 12
 ./bootstrap.sh "/Volumes/外接盘/X-Plane 12"       # 装别处时传路径
 ```
