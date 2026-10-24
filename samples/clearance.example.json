@@ -1,0 +1,11 @@
+{
+  "callsign": "DELTA ALPHA INDIA KILO NOVEMBER",
+  "runway": "25C",
+  "SID": "CIND3F",
+  "Waypoints in route": "EDDF CINDY HAREM ELMOX PIGAB DKB AKANU LUPOX RENLO BESNI OLETU EBEDA ROTAX UNKEN SBG LNZ BARUG LOWW",
+  "initial_climb_ft": 5000,
+  "cruise_altitude_ft": 28000,
+  "squawk": "4271",
+  "QNH": "1023",
+  "Destination": "LOWW"
+}
