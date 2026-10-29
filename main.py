@@ -9,8 +9,9 @@ import whisper
 import sounddevice
 from openai import OpenAI
 
-from route_finder import find_route
+import route_finder as rf
 from getSIDandOthers import *
+from offcoursejudgement import *
 
 API_KEY = os.environ["LLM_API_KEY_AI_ATC_V1"]
 client = OpenAI(
@@ -44,6 +45,8 @@ isClearanced = ATCState()
 isInitialClimbed = ATCState()
 isClearToCruiseAlt = ATCState()
 isCruiseClimbed = ATCState()
+judge_offcourse = ATCState()
+isRemindOffcourse = ATCState()
 
 
 def clr_Readback(REGISTRATION):
@@ -113,7 +116,7 @@ DEP_ICAO = input().strip().upper()
 print(">>> ---- Enter Arrival Airport ICAO code: ")
 ARR_ICAO = input().strip().upper()
 
-ROUTE_arr = find_route(DEP_ICAO, ARR_ICAO)##return a list of waypoints, the first is departure airport, the last is arrival airport, 
+ROUTE_arr = rf.find_route(DEP_ICAO, ARR_ICAO)##return a list of waypoints, the first is departure airport, the last is arrival airport, 
 ##the second is SID endpoint, the second last is STAR startpoint
 
 possibleSID = get_SID(DEP_ICAO, ROUTE_arr[1], CIFP_DIR)##return a list of possible SID for the departure airport and the SID endpoint
@@ -124,6 +127,13 @@ print("[debug] SIDs available for this route are: ", SID_text)
 
 SID_CON_RW = match_sid_rw(possibleSID, CIFP_DIR, DEP_ICAO)###return a dictionary of SID and its corresponding runway, key is SID, value is runway
 print("[debug] SID and its corresponding runway possible are: ", json.dumps(SID_CON_RW))
+
+APT_COOR = rf._node_coord(ROUTE_arr[0], near=None)
+SID_END_COOR = rf._node_coord(ROUTE_arr[1], near=APT_COOR)
+APT2_COOR = rf._node_coord(ROUTE_arr[-1], near=None)
+STAR_ORI_COOR = rf._node_coord(ROUTE_arr[-2], near=APT2_COOR)
+L_APT_SID = rf._nm_distance(APT_COOR[0], APT_COOR[1], SID_END_COOR[0], SID_END_COOR[1])
+L_APT2_STAR = rf._nm_distance(APT2_COOR[0], APT2_COOR[1], STAR_ORI_COOR[0], STAR_ORI_COOR[1])
 
 ##functinon for the sub thread for monitoring input, prevent waiting in main loop
 def preInput():
@@ -161,6 +171,8 @@ while True:
             hdg = flight_data["heading"]
             alt = flight_data["altitude"]
             vs = flight_data["vertical speed"]
+            airlat = flight_data["latitude"]
+            airlon = flight_data["longitude"]
 
             AIRCRAFT_REG = flight_data["aircraft-registration"]
     except:
@@ -222,6 +234,7 @@ while True:
             else:
                 if(now - last_remind_initC >= 120):
                     print(AIRCRAFT_REG, ", I repeat, Climb and maintain ", init_alt, ", you are currently not climbing, no readback required")
+                    last_remind_initC = time.perf_counter()
                 pass
         else:
             if(init_alt - alt <= 200):
@@ -237,7 +250,29 @@ while True:
             else:
                 if(now - last_remind_cruiseC >= 120):
                     print(AIRCRAFT_REG, ", I repeat, Climb and maintain FL", crusie_alt_fl, ", you are currently not climbing, no readback required")
+                    last_remind_cruiseC = time.perf_counter()
                 pass
+    
+    L_AFT_APT = rf._nm_distance(APT_COOR[0], APT_COOR[1], airlat, airlon)#aircraft and departure
+    L_AFT_APT2 = rf._nm_distance(APT2_COOR[0], APT2_COOR[1], airlat, airlon)#aircraft and destination
+    isOffCourse = None
+    if(L_AFT_APT >= L_APT_SID):
+        judge_offcourse.active = True
+    if(L_AFT_APT2 <= L_APT2_STAR):
+        judge_offcourse.active = False
+    if(judge_offcourse.active):
+        isOffCourse = checkoffcourse(airlat, airlon, CLEARANCE_PATH)
+    now_offc = time.perf_counter()
+    if(not isOffCourse):
+        isRemindOffcourse.active = False
+    if(isOffCourse):
+        if(isRemindOffcourse.active == False):
+            decideDirectto(airlat, airlon, CLEARANCE_PATH, AIRCRAFT_REG)
+            last_remind_offc = time.perf_counter()
+            isRemindOffcourse.active = True
+        if(now_offc - last_remind_offc >= 120):
+            decideDirectto(airlat, airlon, CLEARANCE_PATH, AIRCRAFT_REG)
+            last_remind_offc = time.perf_counter()
 
     if(input_Pilot != None and pilotSays != None):
         if(isClearanced.active == True):

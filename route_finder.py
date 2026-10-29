@@ -100,7 +100,7 @@ def _along_track(lat, lon, lat1, lon1, lat2, lon2):
     # 用局部平面近似: 航线方向单位向量与点到起点向量做点积, 结果即为纵向投影
     ax, ay = lon1, lat1
     bx, by = lon2, lat2
-    dx, dy = bx - ax, (by - ay) * math.cos(math.radians((lat1 + lat2) / 2.0))
+    dx, dy = (bx - ax) * math.cos(math.radians((lat1 + lat2) / 2.0)), by - ay
     L = math.hypot(dx, dy)
     if L < 1e-9:
         return 0.0
