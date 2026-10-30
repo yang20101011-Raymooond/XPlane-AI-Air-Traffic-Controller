@@ -8,7 +8,7 @@ def get_current_airway(airlat, airlon, clearancejsPATH):
         clearance = json.load(f)
         waypoints_in_route_str = clearance["Waypoints in route"]
 
-    waypoints_in_route = waypoints_in_route_str.split() if isinstance(waypoints_in_route, str) else list(waypoints_in_route)
+    waypoints_in_route = waypoints_in_route_str.split() if isinstance(waypoints_in_route_str, str) else list(waypoints_in_route_str)
     waypoints_in_route.pop(-1)##remove destination airport first
     
     ##create array to store coordinates of waypoints
