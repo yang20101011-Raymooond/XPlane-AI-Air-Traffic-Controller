@@ -88,7 +88,7 @@ def decideDirectto(airlat, airlon, clearancejsPATH, REGISTRATION):
 
     index = AIRWAY.index(current_airway)
 
-    if(d_aft_dest >= 8):
+    if(d_aft_dest >= 18):
         print(REGISTRATION, ", you are off course, fly direct ", dest_icao)
     elif(index < len(AIRWAY)-1):
         next_icao = AIRWAY[index+1][1]
