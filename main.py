@@ -115,6 +115,8 @@ print(">>> ---- Enter Depature Airport ICAO code: ")
 DEP_ICAO = input().strip().upper()
 print(">>> ---- Enter Arrival Airport ICAO code: ")
 ARR_ICAO = input().strip().upper()
+print()
+print("Waiting")
 
 ROUTE_arr = rf.find_route(DEP_ICAO, ARR_ICAO)##return a list of waypoints, the first is departure airport, the last is arrival airport, 
 ##the second is SID endpoint, the second last is STAR startpoint
