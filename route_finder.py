@@ -65,9 +65,29 @@ PROCEDURE_END_NM = 45.0      # STAR 末点离机场的距离上限; 欧洲常见
 REVERSE_PENALTY = 0.25       # 逆行航路的代价放大比例(0.25 = 同样的边多花 25% 距离)
 ACCESS_CANDIDATES = 6        # 端点接入航路网时尝试的候选点数(应对导航数据的分量割裂)
 MAX_REACH_NM = 12000.0       # 反向可达性搜索的最大扩展距离(洲际航线 5000-7000nm 需覆盖)
+
+# --- 航路点稀疏化 (MCDU 输入友好) ---
+# 原始 earth_awy.dat 的航路是逐段短边(5-40nm), 直接输出会得到几十个相邻点,
+# 在 MCDU 里要敲很久. 这里在搜索阶段就把导航图压缩成"跳跃图":
+# 同一条航路上相距 SPARSE_MIN_NM..SPARSE_MAX_NM 的两个点直接连一条边,
+# 路径自然只剩稀疏的关键点. 上限 200nm 是因为导航数据库里有的航段本身就有 100-190nm.
+SPARSE_MIN_NM = 70.0         # 相邻输出点的最小间距: 比这更近的点在搜索里被跳过(除非被迫折返)
+SPARSE_MAX_NM = 200.0        # 单次跳跃的最大间距: 超过必须落地, 否则直线化会偏离真实航路
+SPARSE_RUN_LIMIT_NM = 1200.0 # 沿同一航路连续跳跃的累计上限, 之后必须落地
+SPARSE_LOOKAHEAD = 64        # 构建跳跃边时每步最多访问的节点数
+SPARSE_RETURN_FACTOR = 6.0   # 折返惩罚: 跳过去又沿原航路倒回来的额外代价 = 折返距离 x 此倍数
+LATERAL_DETOUR_LIMIT = 1.75    # 大圆里程/沿航线投影里程 的上限, 超过说明横向绕了大圈
+                             # (这条是防止"飞到另一半地球再折回来", 与正常的缓弯绕行无关)
+SPARSE_MAX_DEVIATION_NM = 60.0   # 删点allowed的最大横向偏离: 超过就说明那是真实转弯点
+FALLBACK_MAX_HOPS = 24       # 兜底路径允许的最大跳跃数, 超过改用逐边路径
+SPARSE_MAX_FALLBACK_NM = 320.0  # 兜底路径的几何简化上限(机场间距可能很大), 仍不超航段本身长度
 ACCESS_DIST_LIMIT_NM = 260.0 # 两端接入距离之和的上限, 超过说明程序端点离航路太远
-MAX_DETOUR_RATIO = 1.35      # 绕飞比上限(总航程/大圆距离), 超过视为不可接受的绕圈航路
-DETOUR_SOFT_RATIO = 1.12     # 评分时开始加罚的绕飞比, 真实航路一般在 1.02-1.10
+MAX_DETOUR_RATIO = 1.70      # 绕飞比上限(总航程/大圆距离). 放宽的原因: 真实航路常常比
+                             # 直线绕不少(EKCH->LOWW 全程走航路 1.62, 直线拼接只要 1.26),
+                             # 硬卡 1.35 会把真实航路全毙掉, 只能退回不存在的直线航段.
+                             # 真正的"折来折去"由下面的横向绕行/倒退/折返检查负责拦.
+DETOUR_SOFT_RATIO = 1.25     # 评分时开始加罚的绕飞比. 抬到 1.25 是为了别把真实航路
+                             # 罚到输给兜底直线; 超软阈值部分仍按里程 3 倍重罚, 选路依然偏向短而直的.
 
 # ============================ 懒加载的数据集 ============================
 
@@ -224,13 +244,61 @@ def _node_coord(name, near=None):
         apt = _get_airports().get(name)
         if apt is not None:
             return apt
-    coord = _fix_coord(name, near=near)     # 再查航路点表 (已返回二元组)
-    if coord is not None:
-        return coord
-    nav = _nav_coord(name, near)            # 最后查导航台表
-    if nav is not None:
-        return (nav[0], nav[1])             # 去掉区域码, 统一成二元组
+    entries = _get_fixes().get(name)
+    if entries:
+        return _pick_fix_entry(entries, None, near)
+    # earth_fix 只收 ENRT 级航路点; 美国内陆的 VOR/NDB(MCB/MEI/MGM/RBV)只在
+    # earth_nav 里, 不查这张表整条跨大洋航路会一个坐标都解析不出来,
+    # 于是航迹被压成起降两点之间的一条直线.
+    fs = _get_fixes().get(name)
+    if fs and len(fs) == 1 and near:
+        # 五字母航路点全球重名的概率极低, 只有一份就用它 —— 但必须先过"方向合理"
+        # 这一关: NAKHA/MEOVA/ADBAG/GULOT 都只有一份坐标, 却在云南;
+        # 光凭"唯一"就认, 伦敦出发的航路会一路串到中国再跳到百慕大.
+        lat, lon, _, _ = fs[0]
+        if _nm_distance(near[0], near[1], lat, lon) <= MAX_FIX_JUMP_NM:
+            return (lat, lon)
+    nav = _get_navaids().get(name)
+    if nav:
+        # earth_nav 里同一个台会出现多条( VOR、DME、ILS 各占一行, 坐标相同),
+        # 不去重会把"同一个实体"误判成"多份同名点", 进而当成歧义丢掉.
+        uniq = {(round(lat, 4), round(lon, 4)): (lat, lon, reg, reg) for lat, lon, reg in nav}
+        picked = _pick_fix_entry(list(uniq.values()), None, near)
+        if picked:
+            return picked
+    # earth_fix 里没有这个名字(三字母定位点常见): 用 CIFP 坐标表兜底, 同样按参考点消歧
+    cifp = _get_cifp_coords().get(name)
+    if cifp:
+        return _pick_fix_entry(cifp, None, near)
     return None
+
+
+def _pick_fix_entry(entries, airport=None, near=None):
+    """在 [(lat, lon, 机场, 区域), ...] 里为同名点选一份: 本机场内 > 离参考点最近."""
+    if airport:
+        for lat, lon, apt, _ in entries:
+            if apt == airport:
+                return (lat, lon)                     # 程序所属机场的同名点最可信
+    if near:
+        # 只有一份坐标时没有歧义可言: 多远都得认. 跨洋航路的上一个点到下一个点
+        # 动辄两千海里(EGLL 之后的 LCH/MCB/MEI 在美国东南), 用"离参考点 250nm"
+        # 做上限会把整条大西洋航段的坐标全部判死, 航迹最后压成起降点之间一条直线.
+        if len(entries) == 1:
+            # 唯一一份也未必是本区域的: NAKHA/MEOVA/ADBAG/GULOT 全球只有一份,
+            # 都在云南, 却出现在伦敦出发的航路里. 单点距离阈值会误杀跨洋航段
+            # (EGLL 之后 3000nm 才到美国的点), 所以放宽为 MAX_REACH_NM 量级,
+            # 只挡"跨了半个地球"的串味.
+            lat, lon = entries[0][0], entries[0][1]
+            if _nm_distance(near[0], near[1], lat, lon) <= MAX_REACH_NM:
+                return (lat, lon)
+        best = min(entries, key=lambda e: _nm_distance(near[0], near[1], e[0], e[1]))
+        if _nm_distance(near[0], near[1], best[0], best[1]) > MAX_FIX_JUMP_NM:
+            # 所有同名点都在几百海里外: 说明这个航路点在本区域没有唯一坐标,
+            # 宁可返回 None 让调用方跳过, 也不能把航路连到别的大洲.
+            return None
+        return (best[0], best[1])
+    lat, lon, _, _ = entries[0]
+    return (lat, lon)
 
 
 def _fix_coord(name, airport=None, near=None):
@@ -247,17 +315,19 @@ def _fix_coord(name, airport=None, near=None):
             if apt == airport:
                 return (lat, lon)                     # 程序所属机场的同名点最可信
     if near:
-        # 同名点离参考点过远说明是别处的同名航路点, 视为解析失败.
-        # 但"解析失败"不等于"没有坐标": 有些三字母台名只在中国区存在, 而被欧洲航段
-        # 引用(说明航路数据本身把两个不同实体用了同一个名字). 此时退而取全局最近的
-        # 一个, 让搜索继续, 由最终的绕飞比与纵向单调性把关.
+        # 只有一份坐标时没有歧义可言: 多远都得认. 跨洋航路的上一个点到下一个点
+        # 动辄两千海里(EGLL 之后的 LCH/MCB/MEI 在美国东南), 用"离参考点 250nm"
+        # 做上限会把整条大西洋航段的坐标全部判死, 航迹最后压成起降点之间一条直线.
+        if len(entries) == 1:
+            lat, lon, _, _ = entries[0]
+            return (lat, lon)
         ranked = sorted(entries, key=lambda e: _nm_distance(near[0], near[1], e[0], e[1]))
         best = ranked[0]
         if _nm_distance(near[0], near[1], best[0], best[1]) <= MAX_FIX_JUMP_NM:
             return (best[0], best[1])
-        if len(ranked) == 1:
-            return (best[0], best[1])          # 全局只有一个, 没有歧义可言
-        return (best[0], best[1])              # 都不在附近时仍取最近的一个
+        # 有歧义且都不在附近: 宁可缺坐标(上层会跳过这一点), 也不猜一个可能是
+        # 另一个大洲同名点的坐标.
+        return None
     lat, lon, _, _ = entries[0]
     return (lat, lon)
 
@@ -269,12 +339,18 @@ def _load_airways():
     同一对点可能被多条航路连接, 所以邻居值用列表保存全部航路名.
     """
     graph = {}
+    _load_airways.region = {}                     # {点: {区域: 次数}}, 识别同名异区实体
     with open(AWY_PATH, encoding="utf-8", errors="ignore") as f:
         for line in f:
             parts = line.split()
             # 跳过文件头("I" 和 "1100 Version..." 等)以及字段不足的坏行
             if len(parts) < 11 or parts[0] == "I" or not parts[2].isdigit():
                 continue
+            _reg = _load_airways.region
+            _reg.setdefault(parts[0], {})
+            _reg[parts[0]][parts[1]] = _reg[parts[0]].get(parts[1], 0) + 1
+            _reg.setdefault(parts[3], {})
+            _reg[parts[3]][parts[4]] = _reg[parts[3]].get(parts[4], 0) + 1
             a, b = parts[0], parts[3]                    # 航段两端
             two_way = parts[6] == "2"                    # 2 = 双向, 1 = 单向
             low_fl, high_fl = parts[8], parts[9]         # 巡航高度上下限
@@ -293,6 +369,25 @@ def _get_airports():
 def _get_navaids():
     """返回缓存的导航台坐标表 {名称: (lat, lon)}."""
     return _cached("navaids", _load_navaid_coords)
+
+
+def _load_cifp_coords():
+    """
+    无坐标名字的兜底表, 结果为空 — 保留接口以免调用方改动.
+
+    背景: Navigraph 的 earth_fix.dat 只收录 ENRT 级航路点, 被 earth_awy.dat 引用的
+    三字母定位点(INN/OB/PUD…)有些只出现在某个机场的 SID/STAR 里. 曾尝试从 CIFP
+    文本行还原坐标, 但这份数据库(SID/STAR 行)并不带绝对坐标列 —— 只有跑道相对距离
+    和 D 编码的磁航向/距离, 硬解出来的点会落到错误纬度. 因此这里不再猜坐标:
+    解析失败的名字宁可按"无坐标"处理, 由逐边路径和绕飞评分兜底, 也好过把航路连到
+    另一个大洲.
+    """
+    return {}
+
+
+def _get_cifp_coords():
+    """返回缓存的 CIFP 坐标表 {航路点: [(lat, lon, 机场), ...]}."""
+    return _cached("cifp_coords", _load_cifp_coords)
 
 
 def _get_fixes():
@@ -444,10 +539,71 @@ def _nearest_airway_nodes(lat, lon, limit_nm=ENDPOINT_SEARCH_NM):
         if coord is None:
             continue                                  # 没坐标的节点无法计算距离
         d = _nm_distance(lat, lon, coord[0], coord[1])
-        if d <= limit_nm:
-            result.append((d, node))
+        if d > limit_nm:
+            continue
+        # 名字对上了不代表就是本地那个实体: earth_awy 只有一个 "INN" 节点, 它的邻居
+        # 是奥地利的 ADILO/BRENO/NORIN/RTT/TUNUM, 全部落在阿尔卑斯; 而上海浦东
+        # 西南 1nm 处也有个 INN. 按坐标选点会选中这个"上海名字、奥地利身子"的节点,
+        # 从它出发的每一跳都在 5000nm 外, 全被单跳上限剪掉 —— 入口点于是跳数为 0,
+        # 搜索判定不连通, 直接返回只有起降两点的结果(ZSPD->ZBAA).
+        # 用邻居的位置校验: 至少得有一个邻居落在本区域, 这个节点才算本地入口.
+        if not _node_anchored(node, ref, coord):
+            continue
+        result.append((d, node))
     result.sort()
     return result
+
+
+def _edge_cross_region(a, b):
+    """
+    这条边连接的两个点是否分属不同飞行区, 且其中至少一个是"多区域同名点".
+
+    earth_awy 把同名实体并成了一个节点: MAPLE 在 VH(香港) 和 RJ(日本) 各有一个,
+    文件里却写成 "MAPLE RJ -> RIPSI RJ" 的 Y121 —— 这个 MAPLE 是日本茨城附近的点,
+    而香港赤鱲角旁边 10nm 处也有个 MAPLE. 按上下文解析时拿到的是香港那个,
+    于是出现 MAPLE(香港) -> RIPSI(本州) 的 1561nm 单跳.
+    """
+    regs = getattr(_load_airways, "region", None)
+    if not regs:
+        _get_airways()
+        regs = getattr(_load_airways, "region", {}) or {}
+    ra, rb = regs.get(a) or {}, regs.get(b) or {}
+    if not ra or not rb:
+        return False
+    if not (_multi_region(a) or _multi_region(b)):
+        return False                                  # 两边都只有一个区, 不存在混淆
+    # 多区域的那一端, 只要它在某个区里出现过、而另一端从不在那个区出现,
+    # 这条边就有可能是跨区的假连接. 真正同一实体的边(两端区域完全一致)不受影响.
+    for node, other in ((a, set(rb)), (b, set(ra))):
+        if _multi_region(node) and set(regs[node]) - other:
+            return True                               # 这个点在别的区也有一份, 会解析错
+    return False
+
+
+def _node_anchored(node, ref, coord):
+    """节点的邻居里是否有落在 ref 附近的: 用来识破"名字本地、连接外地"的假节点."""
+    graph = _get_airways()
+    nbrs = list(graph.get(node, {}).keys()) + list(_reverse_edges().get(node, ()))
+    if not nbrs:
+        return False
+    for nb in nbrs[:12]:
+        c = _node_coord(nb, near=coord)
+        if c and _nm_distance(coord[0], coord[1], c[0], c[1]) <= SPARSE_MAX_NM:
+            return True                               # 有邻居在单跳范围内, 说明连接本身合理
+    return False
+
+
+def _multi_region(node):
+    """
+    这个名字是否在 earth_awy 里出现在多个飞行区域. MAPLE 同时属于 VH(香港)和 RJ(日本),
+    是两个完全不同的实体共用了一个名字; INN 只属于 LO(奥地利), 上海附近那个 INN
+    根本不在航路图里. 多区域的点不能按名字取坐标, 必须按上下文每次都重新定位.
+    """
+    regs = getattr(_load_airways, "region", None)
+    if not regs:
+        _get_airways()
+        regs = getattr(_load_airways, "region", {}) or {}
+    return len(regs.get(node) or ()) > 1
 
 
 def _reach_map(graph, target, limit_nm=None, anchor=None):
@@ -524,7 +680,14 @@ def _dijkstra(graph, source, target, reverse_penalty=0.0, target_ref=None):
     """
     if source == target:
         return [source], 0
-    if not graph.get(source) or not graph.get(target):
+    if not graph.get(source):
+        return None, 0
+    # 目标允许"没有出边"(终端区末点只进不出, 如 REKLU), 但必须满足其一:
+    #   a) 自己在图里;  b) 确实是某个图节点的邻居(入边存在).
+    # 否则就是个纯同名噪声点(EUG/BOI/PIH 之类的美国台), 放进来会搜出一条
+    # 跨半个地球的假航路(RJTT->RJBB 曾飞到美国西部).
+    if not graph.get(target) and target not in _reverse_edges().get(target, set()) \
+            and not any(target in (_get_airways().get(n) or {}) for n in _reverse_edges().get(target, ())):
         return None, 0
     # 目标点必须按"目的地机场位置"解析: DANDE 在 RJ(日本)和 TJ(加勒比)各有一个同名点,
     # 无参考解析取到加勒比那个后, A* 的启发式把目标估在 1 万海里外, 退化为全图搜索,
@@ -627,6 +790,615 @@ def _undirected_edges():
             und.setdefault(b, set()).add(a)
     _CACHE["undirected_edges"] = und
     return und
+
+
+# ============================ 航路点稀疏化 ============================
+#
+# 问题: earth_awy.dat 把一条航路拆成很多 5-40nm 的短边, 直接输出就是几十个相邻
+# 同向航路点, 在 MCDU 里要一个个敲.
+#
+# 三层措施:
+#   1. 搜索期压缩: _hop_neighbors 把"同一航路上 70-200nm 内的点"当成一跳,
+#      A* 直接在跳跃图上跑, 得到的是长跳序列而不是逐边路径.
+#   2. 折返防御: 跳跃只沿当前航路; 若跳过去的点之后被迫沿同一条航路倒回来,
+#      _return_penalty 给该步重罚(不硬禁, 否则过顶/进出场侧的单向点会断链).
+#   3. 事后简化: _sparsify_nodes 对最终点列做大圆几何简化, 去掉贴着直飞线的碎点
+#      (如机场旁的 VOR).
+
+_DEBUG = bool(os.environ.get("ROUTE_DEBUG"))
+_ARROW = "\x00>"            # 超级边标记: "A\x00>B" 表示从 A 跳到了 B
+_MAX_HOP_CACHE = {}          # {节点: [(邻居, 海里, 是否顺向)]}
+_NAMED_COORD_CACHE = {}      # {节点: 坐标或 None}
+
+
+def _named_coord(node):
+    """
+    无参考点的全局坐标, 结果缓存.
+
+    跳跃图是脱离路径上下文构建的: 三字母导航台作为键时会重名(SFD 在英美各一个,
+    HCH 在亚洲和美洲都有), 几十海里的航段会变成上万海里的大跳. 所以这里不走
+    导航台表, 只认唯一性强的五字母航路点; 查不到就跳过, 由逐边路径兜底, 绝不猜.
+    """
+    if node in _NAMED_COORD_CACHE:
+        return _NAMED_COORD_CACHE[node]
+    if _multi_region(node):
+        # 名字被多个飞行区共用(MAPLE 在 VH 和 RJ 各一个), 没有上下文就没有唯一答案.
+        _NAMED_COORD_CACHE[node] = None
+        return None
+    entries = _get_fixes().get(node)
+    if not entries:
+        coord = None
+    elif len(entries) == 1:
+        coord = (entries[0][0], entries[0][1])
+    else:
+        # 同名多份(DANGO 在日本和墨西哥, BATTY 在阿拉斯加和比利时)时取第一条等于
+        # 掷骰子, 会把一步 60nm 的航段变成 12000nm. 返回 None, 让调用方用上下文解析,
+        # 实在解析不出就跳过这一点.
+        coord = None
+    _NAMED_COORD_CACHE[node] = coord
+    return coord
+
+
+def _airways_into():
+    """反向航路表 {节点: {前驱: [(航路名, ...), ...]}}, 用于识别"沿原航路倒回来"."""
+    c = _CACHE.get("airways_into")
+    if c is not None:
+        return c
+    into = {}
+    for a, nbrs in _get_airways().items():
+        for b, names in nbrs.items():
+            into.setdefault(b, {}).setdefault(a, []).extend(names)
+    _CACHE["airways_into"] = into
+    return into
+
+
+def _direct_edges(node, coord, max_nm=SPARSE_MAX_NM):
+    """
+    直接相邻的航路点: [(邻居, 距离, 航路名集合, 邻居坐标)], 距离用 coord 现场算.
+
+    必须用传入的本点坐标, 不能按名字查: BK/YEK/YZS/HCH/TAO 这类三字母点在 earth_fix
+    里没有唯一坐标, 按名字取会拿到地球另一侧的同名台, 距离算成上万海里, 搜索随即乱跳
+    (曾出现 RJTT->RJBB 绕到美国再飞回日本).
+    """
+    out = []
+    graph = _get_airways()
+    rev = _reverse_edges()
+    for nb, entries in graph.get(node, {}).items():
+        if _edge_cross_region(node, nb):
+            continue                                  # 同名异区实体连成的假边, 不进跳图
+        c = _node_coord(nb, near=coord)
+        if coord and c:
+            d = _nm_distance(coord[0], coord[1], c[0], c[1])
+            # 相邻航路点不可能隔半个地球: 超过 max_nm 的"边"是数据里同名点被连错
+            # (V172 的 CID->BEIGE: 航路记录指的是美国爱荷华州的 BEIGE, 而 earth_fix
+            # 给 BEIGE 的坐标是大阪的进近点). 这种边必须剪掉, 不能进跳图.
+            if d > max_nm:
+                continue
+        else:
+            # 解不出坐标的邻居: 距离未知, 不能当成 40nm 的便宜边(日本->大阪会一路
+            # 串过美国的 EUG/LTJ/IMB/BOI/PIH), 但也不能一刀剪断 —— 剪断之后航路图
+            # 在跳跃层断连, 搜索绕地球找路(ZSPD->ZBAA 跑出 10776nm).
+            # 给一个高于任何真边的代价: 只在确实没有带坐标的路可走时才会被选中,
+            # 而且坐标未知的点不会被当作继续展开的跳板(见 _hop_neighbors 里的判断).
+            d = max_nm * 1.0
+        out.append((nb, d, {e[0] for e in entries}, c))
+    for nb in rev.get(node, ()):
+        if nb in graph.get(node, {}):
+            continue                                  # 双向边已由上面的正向列表覆盖
+        if _edge_cross_region(node, nb):
+            continue
+        c = _node_coord(nb, near=coord)
+        if not (coord and c):
+            d = max_nm * 1.0                          # 同上: 高代价而非剪断
+        else:
+            d = _nm_distance(coord[0], coord[1], c[0], c[1])
+        if d > max_nm:
+            continue
+        out.append((nb, d, set(), c))
+    return out
+
+
+def _unit(lat1, lon1, lat2, lon2):
+    """两点位移的单位方向向量, 用局部等距投影(经度乘 cos 纬度), 只用于比方向."""
+    dy = lat2 - lat1
+    dx = (lon2 - lon1) * math.cos(math.radians((lat1 + lat2) / 2.0))
+    norm = math.hypot(dx, dy)
+    if norm < 1e-9:
+        return (0.0, 0.0)
+    return (dx / norm, dy / norm)
+
+
+def _reverse_run_nm(seq):
+    """
+    返回 (逆向里程, 总里程): 逐段位移与"起点->终点"总方向的点积为负的部分.
+
+    只累计真正"往回飞"的里程, 而不是数点. SID 出港后转向、STAR 进场转弯都会让
+    个别短段与总方向相反(几百米的转弯也算法向反向), 按点数统计会把正常航路
+    整批毙掉 —— ZBAA->ZSPD 曾因此退化成一个空结果. 按里程算, 这类转弯只有
+    几海里, 而 NAKHA(云南)串进伦敦->纽约的航路是上千海里, 一挡一个准.
+    """
+    if len(seq) < 2:
+        return 0.0, 0.0
+    bx, by = _unit(seq[0][0], seq[0][1], seq[-1][0], seq[-1][1])
+    bad = total = 0.0
+    for i in range(1, len(seq)):
+        a, b = seq[i - 1], seq[i]
+        d = _nm_distance(a[0], a[1], b[0], b[1])
+        total += d
+        sx, sy = _unit(a[0], a[1], b[0], b[1])
+        if sx * bx + sy * by < -0.3:
+            bad += d
+    return bad, total
+
+
+def _step_plausible(a, b, target, factor=2.5):
+    """
+    一步跳跃的物理合理性: 从 a 走到 b 之后, 到 target 的直线距离不应比从 a 出发时
+    还远一半以上. 同名点(纽约的 MARIA vs 日本四国的 MARIA)按名字解析出的坐标
+    会制造出上万海里的"跳", 这一步就能拦住, 不用等比 FlyBy 的绕飞比兜底.
+    """
+    if not (a and b and target):
+        return True
+    d0 = _nm_distance(a[0], a[1], target[0], target[1])
+    d1 = _nm_distance(b[0], b[1], target[0], target[1])
+    return d1 <= d0 * factor + 100.0
+
+
+def _return_penalty(src, dst, src_coord=None, dst_coord=None, path_airways=()):
+    """
+    src->dst 是否属于"沿着刚过来时的那条航路又倒回去"; 返回额外代价(海里).
+
+    只比对 path_airways(已走过的真实航路名)与 dst->src 的航路名, 不按名字查坐标,
+    因此不会因为同名台把折返距离估错.
+    """
+    if not path_airways:
+        return 0.0
+    back = {e[0] for e in _get_airways().get(dst, {}).get(src, ())}
+    # 折返判据: 来路与回路有共同航路名(沿原航路倒回), 或者来路里有逆向边
+    # (path_airways 里为 None 表示"这条边是反着走的") —— 后者正是跨洲乱跳的典型形态.
+    # 折返判据: 来路与回路有共同航路名(沿原航路倒回), 或者来路里有逆向边
+    # (path_airways 里为 None 表示"这条边是反着走的") —— 后者正是跨洲乱跳的典型形态.
+    if not (set(back) & {a for a in path_airways if a}) and None not in path_airways:
+        return 0.0
+    if src_coord and dst_coord:
+        return _nm_distance(src_coord[0], src_coord[1], dst_coord[0], dst_coord[1]) * SPARSE_RETURN_FACTOR
+    return 40.0 * SPARSE_RETURN_FACTOR
+
+
+def _hop_neighbors(node, coord=None):
+    """
+    跳跃图的出边: [(落点, 沿航路里程, 航路名集合, 落点坐标)].
+
+    规则: 从一个直接相邻的航路点出发, 沿"同一航路"(共用航路名的连续段)往前走,
+    取 70-200nm 之间最远的一点作为落点; 该方向走不到 70nm 就退回走得最远的那点.
+    只沿同一条航路推进, 所以不会出现"两条不同航路被当成一跳"的假连接
+    (曾经 RJTT->RJBB 从东京直接跳到洛杉矶, 就是这种假边造成的).
+
+    坐标一律用传入的 coord; 链上遇到没有唯一坐标的点就停在该方向, 绝不按名字猜.
+    """
+    if coord is None:
+        coord = _node_coord(node)
+    # 缓存键只带名字: 坐标按名字解析的结果在进程内是稳定的, 同一节点在不同路径上
+    # 用不同参考点会解出同一个值(earth_fix 命中时), 带坐标反而让缓存几乎不命中,
+    # 单次查询从 2 秒涨到 30 秒.
+    cache_key = node
+    cached = _MAX_HOP_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    out = []
+    for first, d_first, names, c_first in _direct_edges(node, coord):
+        if c_first is None or not names:
+            # 落点没有坐标: 只能当作终点, 不能再从它往外跳. 否则 CID/DSM/IOW
+            # 这种全球多名的点会连成一条横穿美国的走廊, 从东京一路串到纽约.
+            out.append((first, max(d_first, 1.0), names, c_first))
+            continue
+        if d_first >= SPARSE_MIN_NM:
+            out.append((first, d_first, names, c_first))
+            continue
+        # 头部太近: 继续沿同一航路向前找 70-200nm 的落点
+        best = (first, d_first, c_first)
+        queue = [(first, d_first, names, c_first)]
+        seen = {first}
+        steps = 0
+        while queue and steps < SPARSE_LOOKAHEAD:
+            cur, dist, cur_names, c_cur = queue.pop(0)
+            steps += 1
+            for nb, d, nnames, c_nb in _direct_edges(cur, c_cur):
+                if nb in seen or c_nb is None:
+                    continue
+                shared = cur_names & nnames
+                if not shared:
+                    continue                     # 换了航路: 不能再算作同一跳
+                nd = dist + d
+                if nd > SPARSE_MAX_NM:
+                    continue
+                seen.add(nb)
+                queue.append((nb, nd, shared, c_nb))
+                if nd >= SPARSE_MIN_NM and nd > best[1]:
+                    best = (nb, nd, c_nb)
+        out.append((best[0], best[1], names, best[2]))
+    # 同一落点只留最短的一条
+    best_by_node = {}
+    for nbn, dist, nm, c in out:
+        if nbn == node:
+            continue
+        if nbn not in best_by_node or dist < best_by_node[nbn][1]:
+            best_by_node[nbn] = (nbn, dist, nm, c)
+    result = list(best_by_node.values())
+    _MAX_HOP_CACHE[cache_key] = result
+    return result
+
+
+def _dijkstra_hop(graph, source, target, reverse_penalty=0.0, target_ref=None):
+    """
+    _dijkstra 的稀疏化版本, 在跳跃图上搜索.
+
+    返回 (超级边序列, 逆行边数), 元素形如 "A\x00>B",
+    用 _path_from_hop_path 展开成真实经过的航路点.
+    """
+    if source == target:
+        return [source], 0
+    if not graph.get(source):
+        return None, 0
+    # 目标允许"没有出边"(终端区末点只进不出, 如 REKLU), 但必须满足其一:
+    #   a) 自己在图里;  b) 确实是某个图节点的邻居(入边存在).
+    # 否则就是个纯同名噪声点(EUG/BOI/PIH 之类的美国台), 放进来会搜出一条
+    # 跨半个地球的假航路(RJTT->RJBB 曾飞到美国西部).
+    if not graph.get(target) and target not in _reverse_edges().get(target, set()) \
+            and not any(target in (_get_airways().get(n) or {}) for n in _reverse_edges().get(target, ())):
+        return None, 0
+    # 目标点自己没坐标时(REKLU 这类终端区末点), 用 target_ref(通常是目的地机场)
+    # 当几何参照. 不能让 t_coord 保持 None: _step_plausible 靠它拦跨洲同名点,
+    # 一旦失效(RJTT->RJBB 的 STAR 起点 BEIGE 没坐标), 搜索就敢从东京一路
+    # 走到美国西部的导航台, 单次查询从 1 秒变成 200 秒.
+    t_coord = _node_coord(target, near=target_ref) or target_ref
+
+    def heuristic(n):
+        base = n.split(_ARROW)[-1]
+        c = _node_coord(base, near=t_coord) or _node_coord(base)
+        if c and t_coord:
+            return _nm_distance(c[0], c[1], t_coord[0], t_coord[1])
+        return 0.0
+
+    # 状态带"当前点坐标"和"上一跳所在航路", 两者都不按名字重新解析.
+    open_heap = [(heuristic(source), 0.0, source, source, 0)]
+    best_g = {source: 0.0}
+    prev = {source: None}
+    seen_state = {}
+    while open_heap:
+        _, g, state, cur, rev = heapq.heappop(open_heap)
+        if cur == target:                              # 出堆即最优
+            hops = []
+            while state is not None and state != source:
+                hops.append(state)
+                state = prev[state]
+            return hops[::-1], rev
+        if g > best_g.get(state, float("inf")):
+            continue
+        cur_coord, cur_names = seen_state.get(state, (_node_coord(cur), set()))
+        for nb, dist, names, c_nb in _hop_neighbors(cur, cur_coord):
+            nstate = cur + _ARROW + nb
+            # 没有坐标的航路点不能当中转站: 它的距离未知(只能瞎估), 而且同名歧义
+            # 无法消解. V172 的 CID->BEIGE 就是这种边 —— CID/DSM/IOW 全都没有坐标,
+            # 于是从世界任何地方都能"穿过美国"接到大阪的进近点 BEIGE,
+            # RJTT->RJBB 因此绕到美国再飞回来(单次查询 250 秒).
+            # 允许它们作为落点(终点可能正好没坐标), 但不允许继续从它们往外跳.
+            if cur_coord is not None and c_nb is None and nb != target:
+                continue
+            if c_nb is not None and not _step_plausible(cur_coord, c_nb, t_coord):
+                continue                               # 坐标明显错位(同名点), 不许当跳
+            forward_edge = bool(names & {e[0] for e in graph.get(cur, {}).get(nb, ())})
+            step = dist
+            if not forward_edge:
+                step *= (1.0 + reverse_penalty)        # 逆行/反向边加罚
+            step += _return_penalty(cur, nb, cur_coord, c_nb, cur_names)
+            ng = g + step
+            if ng >= best_g.get(nstate, float("inf")):
+                continue
+            best_g[nstate] = ng
+            prev[nstate] = state
+            seen_state[nstate] = (c_nb, names if forward_edge else set(names) | {None})
+            heapq.heappush(open_heap, (ng + heuristic(nstate), ng, nstate, nb, rev + 1 if step > dist else rev))
+    return None, 0
+
+
+def _undo_backtrack(nodes):
+    """
+    撤销"走出去又顺着原路走回来"的折返段.
+
+    数据里有这种链: W180 从 XOLAL 一路东去, 到 IDEPO/GLB 之后又冒出 XOLAL->MEKEP->...
+    的重复节点(航路图把 ILS/LOC 附近误连成一串), 最短路径就先去走那段再折回来,
+    输出就成了来回跑的路线.
+
+    做法: 找到 nodes[i..j-1] 之后紧跟同一串逆序节点(走过又走回), 剪掉后半截;
+    若回程只是部分重复(例如 ...PUDUG OS XOLAL MEKEP ... 又回到 UNRIX 附近),
+    就退回"第一次经过该点的位置", 把中间那圈绕行整个删掉.
+    """
+    changed = True
+    while changed and len(nodes) > 3:
+        changed = False
+        # 1) 完整逆序回折: A..B C D C B..  ->  ----
+        for i in range(1, len(nodes) - 2):
+            for j in range(i + 3, len(nodes) + 1):
+                block = nodes[i:j]
+                k = j + len(block) - 1
+                if k >= len(nodes):
+                    break
+                if nodes[j:k + 1] == list(reversed(block)):
+                    nodes = nodes[:i] + block + nodes[k + 1:]
+                    changed = True
+                    break
+            if changed:
+                break
+        if changed:
+            continue
+        # 2) 回环: 某点再次出现, 且两次之间是一整圈 -> 砍掉后面那一圈
+        seen = {}
+        for idx in range(1, len(nodes)):
+            p = nodes[idx]
+            if p in seen:
+                first = seen[p]
+                if idx - first >= 3:
+                    nodes = nodes[:first + 1] + nodes[idx + 1:]
+                    changed = True
+                    break
+            else:
+                seen[p] = idx
+    return nodes
+
+
+def _has_repeat(points):
+    """
+    点列里出现重复航路点(来回绕)则返回 True.
+    只放过第一个点(起点本身), 末点必须查 —— 回折恰恰最容易发生在衔接待降落跑道时:
+    ... GLAXY, SWAMP, RJAA 就是先到 SWAMP 再折回来, 但末点若是重复点就看不见.
+    """
+    seen = set()
+    for p in points[1:]:
+        if p in seen:
+            return True
+        seen.add(p)
+    return False
+
+
+def _point_to_segment_nm(p, a, b):
+    """点 p 到线段 a-b 的近似垂直距离(海里), 局部平面近似."""
+    k = math.cos(math.radians((a[0] + b[0]) / 2.0))
+    ax, ay = a[1] * k, a[0]
+    bx, by = b[1] * k, b[0]
+    px, py = p[1] * k, p[0]
+    dx, dy = bx - ax, by - ay
+    L2 = dx * dx + dy * dy
+    if L2 < 1e-12:
+        return math.hypot(px - ax, py - ay) * 60.0
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L2))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy)) * 60.0
+
+
+def _resolve_within(seq, name, max_seg_nm=400.0):
+    """
+    在坐标解析不出时, 用整条点列的上下文给 name 定位.
+
+    同名航路点(BATTY 在阿拉斯加和比利时各一份)只靠名字会挑错洲, 但中转段的点
+    一定落在前后两个已知点之间, 于是从两端各扫一遍: 正向扫描给出能连通的前缀,
+    反向扫描给出后缀, 取夹在两者之间、且到两端距离不超过 max_seg_nm 的那一份.
+    都不满足就返回 None —— 宁可删不动, 也不接受跨洲坐标.
+    """
+    entries = _get_fixes().get(name)
+    if not entries:
+        # 三字母台名(LNO/HUL/CIV/COA)只出现在 earth_nav 里, 同名现象同样严重,
+        # 这里按整个点列里其它已知点取最近的一份, 而不是盲取第一条(那可能是非洲的台).
+        navs = _get_navaids().get(name) or []
+        refs = []
+        for _q in seq:
+            if _q == name:
+                continue
+            _c = _named_coord(_q)
+            if _c:
+                refs.append(_c)
+        if not navs:
+            return None
+        if not refs:
+            # 整条点列都没有可解析的锚点时无从消歧(YTE 在加拿大和日本各有一个),
+            # 宁可返回 None 让这个点保持"未知", 也不猜一个可能跨洋的坐标.
+            return None
+        # 直接用"到最近参考点的距离", 不用包围盒中心: 中转段末尾那串台(UX/YFY/YTE/MQE)
+        # 只和它前面的点有关, 用全体均值会被航路起点(上海)拖偏.
+        best = None
+        for e in navs:
+            d = min(_nm_distance(e[0], e[1], r[0], r[1]) for r in refs)
+            if best is None or d < best[0]:
+                best = (d, (e[0], e[1]))
+        # 允许跨段但不允许跨洲: 用 max_seg_nm 的 3 倍做上限
+        return best[1] if best and best[0] <= max_seg_nm * 3.0 else None
+    if len(entries) < 2:
+        return (entries[0][0], entries[0][1])
+
+    def _ok(c, r):
+        return _nm_distance(c[0], c[1], r[0], r[1]) <= max_seg_nm
+
+    idx = seq.index(name) if name in seq else -1
+    before = after = None
+    if idx > 0:
+        r = None
+        for _q in seq[:idx]:
+            c = _node_coord(_q, near=r) if r else (_named_coord(_q) or _node_coord(_q))
+            if c:
+                r = c
+        before = r
+    if idx >= 0:
+        r = None
+        for _q in reversed(seq[idx + 1:]):
+            c = _node_coord(_q, near=r) if r else (_named_coord(_q) or _node_coord(_q))
+            if c:
+                r = c
+        after = r
+    best = None
+    for e in entries:
+        c = (e[0], e[1])
+        if before and not _ok(c, before):
+            continue
+        if after and not _ok(c, after):
+            continue
+        if before:
+            d = _nm_distance(c[0], c[1], before[0], before[1])
+            if best is None or d < best[0]:
+                best = (d, c)
+        else:
+            return c
+    if best:
+        return best[1]
+    if len(entries) == 1:
+        return (entries[0][0], entries[0][1])
+    return None
+
+
+def _sparsify_nodes(nodes, min_nm=None, max_nm=None, max_dev_nm=30.0, path=None, dist_nm=None):
+    """
+    事后几何简化, 把"贴着直飞线的碎点"去掉, 让相邻点张力至少 min_nm.
+
+    单遍贪心做不长(第二次跳点后偏离会超 max_dev_nm, 贪心就卡住), 所以反复扫,
+    直到一趟没有删掉任何点为止. max_dev_nm 可以放宽到 max_nm/4: 只要被删的点
+    仍然靠近新的直飞段, 航迹形状就没变, 只是中间那些 5-40nm 的碎点没了.
+
+    有 path(逐段点列, 与 nodes 等长)时还会检查被删段确实在同一航路上 —— 否则
+    会把真实的航路拐点抹掉, 变成"两点之间直飞"。
+    """
+    if len(nodes) < 3:
+        return nodes
+    min_nm = SPARSE_MIN_NM if min_nm is None else min_nm
+    max_nm = SPARSE_MAX_NM if max_nm is None else max_nm
+    # 偏离容差不能跟着 max_nm 一起放大: max_nm 只是"删掉后两个落点之间允许多远",
+    # 而偏离是航迹形状. 容差过大会把转弯点当碎点删掉, 输出变成两点直飞
+    # (曾出现 ZSPD->RJAA 只剩 11 个点, 最后一段 1004nm 直线穿海).
+    max_dev_nm = max(max_dev_nm, min(max_nm / 4.0, SPARSE_MAX_DEVIATION_NM))
+    coords = {}
+    ref = None
+    for n in nodes:
+        # 统一用带参考解析: 三字母导航台(DBL/PUD)在全局表里可能取到别处的同名台,
+        # 估高会让简化步骤把真实的转弯点当成"碎点"删掉.
+        c = _node_coord(n, near=ref) if ref else (_named_coord(n) or _node_coord(n))
+        if c is None and path:
+            # 中转段的中间点常常在 earth_fix 里查不到(旧航路数据), 但整条完整点列
+            # (含 SID/STAR 程序点)是逐点解析得来的, 从那里补坐标, 否则一个 None
+            # 就把后面所有可合并的点全部冻住, 碎点一个都删不掉.
+            _qc = _resolve_within(path, n)
+            if _qc:
+                c = _qc
+        coords[n] = c
+        if c:
+            ref = c
+
+    # 找 nodes[i] 在整条点列里的位置: 简化后中间的点可能已经不在 nodes 里了,
+    # 所以必须查全序列, 不能拿"第 i 个"当对应关系.
+    _full = list(path) if path else None
+    _pos = {}
+    if _full:
+        for _i, _n in enumerate(_full):
+            _pos.setdefault(_n, []).append(_i)
+
+    def airborne(i, prev_n, cur_n):
+        """prev_n -> cur_n 的航路名集合, 未知时返回 None(不做限制)."""
+        if not _full:
+            return None
+        graph = _get_airways()
+        names = set()
+        for pi in _pos.get(prev_n, ()):
+            for pj in _pos.get(cur_n, ()):
+                if pj > pi:
+                    names |= {e[0] for e in graph.get(_full[pi], {}).get(_full[pj], ())}
+        return names or None
+
+    # 无坐标的点(老数据里的三字母航路点)夹在两个已知点之间时, 按首尾等差数列估算
+    # 位置. 只是用来判断"能不能合并", 不会进输出, 也不会跨洲乱跳: 首尾都是上下文
+    # 里已确认的坐标, 插值点必然落在这两点连成的短段上.
+    order = [n for n in nodes]
+    i = 0
+    while i < len(order):
+        if coords.get(order[i]) is not None:
+            i += 1
+            continue
+        j = i
+        while j < len(order) and coords.get(order[j]) is None:
+            j += 1
+        a = coords.get(order[i - 1]) if i > 0 else None
+        b = coords.get(order[j]) if j < len(order) else None
+        if a and b and (j - i) <= 12:
+            span = j - i + 1
+            for k in range(i, j):
+                t = (k - i + 1) / span
+                coords[order[k]] = (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+        i = j
+
+    # 上面只能处理"两端都有坐标"的空洞. 中转段末尾连着一串老式三字母航路点
+    # (BK/CB/RB/UX/YFY...) 时, 空洞会一路顶到列表末尾, 这时改用最后一个已知点
+    # 做锚, 沿前一段的方向等间距外推, 让这些点也能参与合并判断.
+    last = None
+    for _i in range(len(order) - 1, -1, -1):
+        if coords.get(order[_i]) is not None:
+            last = _i
+            break
+    if last is not None and last < len(order) - 1 and last > 0:
+        ca, cb = coords.get(order[last - 1]), coords.get(order[last])
+        if ca and cb:
+            n = len(order) - 1 - last
+            # 单侧外推只给很短的一段用: 后面若还有别的已知点(日本一侧的台),
+            # 外推会把它越过, 反而把中间的点算到错误的位置上.
+            if n <= 4:
+                dlat = cb[0] - ca[0]
+                dlon = cb[1] - ca[1]
+                for k in range(1, n + 1):
+                    coords[order[last + k]] = (cb[0] + dlat * k, cb[1] + dlon * k)
+
+    # 剩下仍无坐标的(整段都没有锚点)按首尾线性插值补齐
+    known = [i for i in range(len(order)) if coords.get(order[i]) is not None]
+    if len(known) >= 2:
+        for a_i, b_i in zip(known, known[1:]):
+            if b_i - a_i <= 1:
+                continue
+            ca, cb = coords[order[a_i]], coords[order[b_i]]
+            span = b_i - a_i
+            for k in range(a_i + 1, b_i):
+                t = (k - a_i) / span
+                coords[order[k]] = (ca[0] + (cb[0] - ca[0]) * t, ca[1] + (cb[1] - ca[1]) * t)
+
+    cur = list(nodes)
+    changed = True
+    while changed and len(cur) > 2:
+        changed = False
+        out = [cur[0]]
+        i = 1
+        while i < len(cur):
+            prev = out[-1]
+            nxt = cur[i]
+            cp, cn = coords.get(prev), coords.get(nxt)
+            if cp and cn and i + 1 < len(cur) and _nm_distance(cp[0], cp[1], cn[0], cn[1]) < min_nm:
+                nxt2 = cur[i + 1]
+                c2 = coords.get(nxt2)
+                if c2:
+                    d2 = _nm_distance(cp[0], cp[1], c2[0], c2[1])
+                    dev = _point_to_segment_nm(cn, cp, c2)
+                    # 几何偏离只是必要条件, 不能单独用它放行: 缓弯航路上被删点
+                    # 离弦线可能只有 40nm, 但那一整段实际要走 142nm, 删掉后航迹
+                    # 被压成直线, 里程凭空少掉 100nm(EKCH->LOWW 曾因此算出比大圆
+                    # 还短的 0.89 倍). 所以再加一条"里程不许变短"的硬条件:
+                    # 绕行里程 cp->cn->c2 必须不超过弦长 d2 的 2%, 否则那个点是
+                    # 真实转弯点, 必须留在航迹里.
+                    # 用"两站间距 + 小余量"而不是纯弦长: 航路点本来就落在航路边上,
+                    # 相邻点之间的距离和必然略大于直线, 飞机也不会贴着弦飞.
+                    # 3% 或 5nm 的余量足以让正常航段通过, 又拦得住把 80nm 弯道
+                    # 压成 40nm 直线的删除.
+                    detour_nm = (_nm_distance(cp[0], cp[1], cn[0], cn[1])
+                                 + _nm_distance(cn[0], cn[1], c2[0], c2[1]))
+                    straight_ok = detour_nm <= d2 * 1.03 + 5.0
+                    if d2 <= max_nm and dev <= max_dev_nm and straight_ok:
+                        i += 1                      # 丢掉 nxt, 换下一个当落点
+                        changed = True
+                        continue
+            out.append(nxt)
+            i += 1
+        cur = out
+    return cur
 
 
 def _dedupe_consecutive(points):
@@ -813,6 +1585,8 @@ def find_route(origin, destination, max_pairs=40):
             tried += 1
             pre = _score_procedure_pair(sid_pts, star_pts, dep_coord, arr_coord)
             if pre is None:
+                if _DEBUG:
+                    print("[gate] pre 淘汰: %s %s" % (sid_name, star_name))
                 continue
 
             # 端点接入航路网: 端点在图上就直接用, 否则接附近的航路点.
@@ -829,6 +1603,8 @@ def find_route(origin, destination, max_pairs=40):
                 if graph.get(n)
             ]
             if not entry_opts or not exit_opts:
+                if _DEBUG:
+                    print("[gate] 接入点缺失: %s %s" % (sid_name, star_name))
                 continue
 
             # 选接入点: 先用一次"反向搜索"得出每个出口候选能连通哪些入口,
@@ -852,39 +1628,98 @@ def find_route(origin, destination, max_pairs=40):
             # 取总代价最小的 (入口, 出口) 对
             entry = min(reachable, key=lambda n: reachable[n][0])
             _, exit_node, entry_penalty, exit_penalty = reachable[entry]
-            path, rev_count = _dijkstra(graph, entry, exit_node, REVERSE_PENALTY,
-                                        target_ref=arr_coord)
+            # 在"跳跃图"上搜索: 中转段只保留 70nm 以上的关键点, 而不是每个航路短边都输出.
+            # 先按"真实航路方向"搜(逆行加罚); 找不到再放开逆行重搜.
+            # 原因: 导航库只记录实际发布方向, 很多终端区是单进口的漏斗 ——
+            # 例如维也纳只能从东边的 OKR 进, 从丹麦方向严格顺向根本进不去,
+            # 唯一"合法"的解是绕到东边多飞 270nm. 真实性优先于形式上的顺向.
+            path, rev_count = _dijkstra_hop(graph, entry, exit_node, REVERSE_PENALTY,
+                                            target_ref=arr_coord)
             if not path:
+                # 只有"严格顺向根本走不通"时才放开逆行(维也纳这类单进口终端区).
+                # 罚值不能接近 0: 0.05 等于不罚, 搜索会为了少走几个顺向边去绕
+                # 一条 954nm 的跨区航路(RJTT->RJBB 因此飞到台湾再折回).
+                path, rev_count = _dijkstra_hop(graph, entry, exit_node, 1.0,
+                                                target_ref=arr_coord)
+            if not path:
+                if _DEBUG:
+                    print("[gate] 跳跃搜索失败: %s %s" % (sid_name, star_name))
                 continue
 
             # --- 4. 拆分中转段 ---
-            # path 两端分别是 SID 终点(或其接入点)与 STAR 起点(或其接入点).
-            # 若两端恰好就是程序端点, 直接丢掉(程序段自带); 否则保留为接入点,
-            # 这样 "SID终点 -> 接入点 -> 航路" 的连接关系不会断.
-            middle = list(path)
-            if middle and middle[0] == sid_end:
-                middle.pop(0)                 # SID 终点已由 SID 段提供
-            if middle and middle[-1] == star_start:
-                middle.pop()                  # STAR 起点已由 STAR 段提供
+            # path 是跳跃序列 [ "A\x00>B", ... ], 末尾可能带终点(逐边模式)或全部是跳跃.
+            # 还原起点必须是 sid_end: entry 只是航路网的接入点, 中转段要从程序终点接出去,
+            # 两者之间那一点点距离由 [origin, sid_exit] + middle 自然覆盖.
+            hops = [h for h in path if isinstance(h, str) and _ARROW in h]
+            tail = [h for h in path if isinstance(p := h, str) and _ARROW not in h]
+            if hops:
+                flat = [sid_end] + hops + (tail[-1:] if tail else [])
+            else:
+                flat = [sid_end] + tail          # 逐边模式, path 已是完整点列
+            # 展开时起点若不是该跳的真实起点(entry 与 sid_end 不同), 会把"接入点-程序终点"
+            # 这一段也塞进第一跳, 于是整串标记原样返回. 那种情况改成从 entry 展开,
+            # 再单独把 sid_end 补在最前面.
+            m_start = entry if entry in (sid_end, flat[0]) or not hops else flat[0]
+            middle = _path_from_hop_path([m_start] + flat[1:])
+            if m_start != sid_end:
+                middle = [sid_end] + middle
+            # 任何内部符号泄漏到输出都说明拼接错位, 这种候选直接淘汰.
+            if any((not isinstance(p, str)) or _ARROW in p for p in middle):
+                if _DEBUG:
+                    print("[skip] 拼接错位:", sid_name, star_name)
+                continue
 
             # --- 5. 拼完整序列 ---
             # 目标结构(只留端点):
             #   [起飞机场, SID终点, 中转航路点..., STAR起点, 降落机场]
-            # SID/STAR 的中间程序点不展开, 只保留与航路衔接的那一个点.
             sid_exit = sid_pts[-1][0]                        # SID 终点 = 交给航路的点
             star_entry = star_pts[0][0]                      # STAR 起点 = 从航路接收的点
 
-            # 中转段两端若与程序端点同名, 去掉重复(端点单独放)
+            # 中转段两端与程序端点同名就剪掉(端点单独放)
             while middle and middle[0] == sid_exit:
                 middle.pop(0)
             while middle and middle[-1] == star_entry:
                 middle.pop()
 
+            # 裁剪之后才判重复: 来回绕的航路(同一段走出去再走回来)在这里显形.
+            if _has_repeat(middle):
+                # 先试着剪掉"原路折返"那一段; 剪完还重复说明是真正的环线, 淘汰.
+                middle = _undo_backtrack(middle)
+            if _has_repeat(middle):
+                if _DEBUG:
+                    _seen = set()
+                    _dup = [p for p in middle[1:] if p in _seen or _seen.add(p)]
+                    print("[skip] 中转段重复: %s %s 重复点=%s" % (sid_name, star_name, _dup[:4]))
+                continue
+
             full = [origin, sid_exit] + middle + [star_entry, destination]
             full = _dedupe_consecutive(full)                 # 去掉相邻重复(如端点直接相连)
 
+            # 间距整形: MCDU 里逐点敲入 70 个点不现实, 把贴着航线的碎点合并掉.
+            # 只在中转段里做(端点与程序衔接点必须保留), 且要求被删段同属一条航路.
+            # 注意简化可能在衔接点旁边留下回折(如 ...GLAXY, SWAMP, RJAA), 所以整理完
+            # 还要再查一遍重复 —— 回折的路线在 MCDU 里等于让飞机掉头.
+            if len(full) > 4:
+                head, inner, tailp = full[0], full[1:-1], full[-1]
+                # 逐边(兜底)路径的里程上限里给 2x 余量, 让同一航路上更远的点也能落在
+                # "被删掉也没关系"的判断范围内, 否则真实航路的细微弯曲会把点全保住.
+                # 一律用 320nm 的上限做"能不能删"的判断, 实际落点仍受 70nm 下限约束,
+                # 这样同一航路上的长弯(如 DBL 附近 14nm 的折点)也能被吞掉, 不会留下碎点.
+                slim = _sparsify_nodes(inner, max_nm=SPARSE_MAX_FALLBACK_NM,
+                                       max_dev_nm=SPARSE_MAX_FALLBACK_NM / 4.0, path=full)
+                if len(slim) >= 2 or not inner:
+                    full = _dedupe_consecutive([head] + slim + [tailp])
+            if _has_repeat(full[1:-1]):
+                if _DEBUG:
+                    print("[skip] 整理后回折:", sid_name, star_name, len(full))
+                continue
+
             # --- 结构校验: 长度足够, 且两个端点都在正确位置 ---
             if len(full) < 3 or full[1] != sid_exit or full[-2] != star_entry:
+                if _DEBUG:
+                    print("[gate] 结构 %d %s %s" % (len(full), sid_name, star_name))
+                continue
+            if any((not isinstance(p, str)) or _ARROW in p for p in full):
                 continue
 
             # --- 6. 评分: 中转点越多越好(说明走了真实航路), 端点接入代价与绕飞越少越好 ---
@@ -905,20 +1740,57 @@ def find_route(origin, destination, max_pairs=40):
                 detour = total_nm / max(direct, 1.0) - 1.0  # 0 = 完全直线
             # --- 纵向单调性: 沿大圆航线投影应基本递增, 大幅倒退说明绕了远路 ---
             # 例: EDDF->LOWW 曾有候选先飞到 18E 再折返, 投影一路冲过终点又退回来.
+            # 投影点必须跳过解不出坐标的: 一旦某个点没坐标, 后面每个点都在错误的
+            # 参考点下解析, 投影会集体塌到起点附近, 正常航路被判成横向绕行.
             projections = []
             _prev = dep_coord
             for _p in full[1:-1]:
+                # 坐标缺失时必须跳过, 不能把 _prev 重置: 早先的写法让 _prev 停在
+                # 第一个解不出坐标的点上, 后面所有点都在错误的参考点下解析,
+                # 投影落到起点附近, 于是 70 点的正常航路被判成"横向绕行 4.69".
                 _c = airports.get(_p) or _node_coord(_p, near=_prev)
                 if _c:
                     projections.append(_along_track(_c[0], _c[1], dep_coord[0], dep_coord[1],
                                                     arr_coord[0], arr_coord[1]))
                     _prev = _c
+            # 逆向航段: 已经解出坐标的点里, 如果某一步的位移与"起点->终点"的大圆
+            # 方向基本相反, 说明航路在整体倒着走. NAKHA/MEOVA/ADBAG 这类云南点
+            # 出现在伦敦->纽约的航路上时, 投影覆盖率不够会被上面的闸门放过,
+            # 但"向东走"这件事本身就与目的地相反.
+            _pts = []
+            _pp = dep_coord
+            for _p in full[1:-1]:
+                _c = airports.get(_p) or _node_coord(_p, near=_pp)
+                if _c:
+                    _pts.append(_c)
+                    _pp = _c
+            _bad_nm, _tot_nm2 = _reverse_run_nm([dep_coord] + _pts + [arr_coord])
+            if _tot_nm2 > 0 and _bad_nm > max(150.0, _tot_nm2 * 0.15):
+                    if _DEBUG:
+                        print("[gate] 逆向航段 %.0fnm/%.0fnm: %s %s"
+                              % (_bad_nm, _tot_nm2, sid_name, star_name))
+                    continue
             backwards = sum(1 for i in range(1, len(projections))
                             if projections[i] < projections[i - 1] - 5.0)   # 容忍 5nm 抖动
             if projections:
                 total_nm = max(total_nm, projections[-1])                # 投影里程作为下界
                 if backwards > max(2, len(projections) // 4):
+                    if _DEBUG:
+                        print("[gate] 倒退 %d: %s %s" % (backwards, sid_name, star_name))
                     continue                             # 超过 1/4 的航段在倒退, 视为绕远
+                # 纵向单调还不够: 整段先绕去南半球再回来, 投影仍然一路"向前".
+                # 用"实际大圆里程 / 投影里程"判断横向绕行, 正常航路一般 < 1.35.
+                # 投影按"已知点的推进量"算; 中部一串点解不出坐标时 projections[-1]
+                # 会停在中途, 比值虚高. 用"总里程 vs 直达 + 容忍"判横向绕行更稳.
+                _lat_ratio = total_nm / projections[-1] if projections[-1] > 0 else 0.0
+                _covered = projections[-1] / max(direct, 1.0)
+                # 覆盖率不足 0.8 说明中部大量点没坐标, 投影里程不可信, 交给跨洲闸门与
+                # 绕飞比把关; 覆盖良好时才用横向比 —— 否则正常航路会被误杀成绕行.
+                if _covered >= 0.8 and _lat_ratio > LATERAL_DETOUR_LIMIT:
+                    if _DEBUG:
+                        print("[gate] 横向绕行 %.2f: %s %s"
+                              % (_lat_ratio, sid_name, star_name))
+                    continue
 
             # --- 绕飞硬约束: 绕飞比过大说明算法钻进了错误的航路分支, 直接淘汰 ---
             # 例: EDDF->LOWW 曾有组合先向南偏出 175nm 再折返, 总航程 602nm 对直线 335nm.
@@ -928,34 +1800,249 @@ def find_route(origin, destination, max_pairs=40):
             if lenient is None or detour_ratio < lenient[0]:
                 lenient = (detour_ratio, full)
             if detour_ratio > MAX_DETOUR_RATIO:
+                if _DEBUG:
+                    print("[gate] detour %.2f %s %s" % (detour_ratio, sid_name, star_name))
                 continue                              # 绕得离谱, 换下一组
+
+            # --- 合理性闸门: 中转段不能"凭空跳过半个地球" ---
+            # 三字母点名全局重名(HCH/TAO/MARIA/CHILY...), 某些航路边上就会冒出一条
+            # 直达另一大洲的假边. 表现是总航程远超直线, 但这些点没有坐标时绕飞比
+            # 会算不出来, 于是必须用"中转段里程 vs 两端端点直线距离"兜一道.
+            span_ok = True
+            if middle:
+                _m0 = sid_pts[-1][1]
+                _m1 = star_pts[0][1]
+                span_direct = _nm_distance(_m0[0], _m0[1], _m1[0], _m1[1])
+                span_nm = 0.0
+                _prev = _m0
+                for _p in middle[1:] + [star_pts[0][0]]:
+                    _c = airports.get(_p) or _node_coord(_p, near=_prev)
+                    if _c:
+                        span_nm += _nm_distance(_prev[0], _prev[1], _c[0], _c[1])
+                        _prev = _c
+                # 这一道只用来抓"凭空跨半个地球"的假边, 不负责判绕路远近:
+                # 中转段两端直线很短(EKCH->LOWW 只有 340nm)时, 任何真实航路都会
+                # 轻松超过 1.7, 于是好的 SID/STAR 组合被整批毙掉, 只剩兜底直线.
+                # 跨洲假边的特征是"里程离谱"(上万海里), 用一个宽松得多、且带绝对
+                # 余量的上限区分: 允许直达距离的 4 倍, 再加 800nm 给终端区的绕行.
+                if span_direct > 1.0 and span_nm > span_direct * 4.0 + 800.0:
+                    span_ok = False
+            if not span_ok:
+                if lenient is None:
+                    lenient = (detour_ratio, full)
+                if _DEBUG:
+                    print("[gate] span 超限: %s %s" % (sid_name, star_name))
+                continue
+
+            # --- 跨洲保护: 相邻两点大圆距离超过 2000nm, 且不是南北向大圆航线 ---
+            # 中纬度东西向转场不存在 2000nm 的相邻航段(最长的航线单段也就 1000nm 上下),
+            # 这种跳跃几乎一定是同名点(HCH/TAO/ML 之类)解析到了别的大洲.
+            # 南北向高纬航线(如跨极/跨洋)允许长段, 用"纬度变化超过经度变化"放行.
+            # 跨度必须逐段检查, 不能只看总航程: 两个跨洲大跳可以互相抵消,
+            # 总里程看着正常(曾出现 ZBAA->ZSPD 绕澳大利亚再飞日本的组合),
+            # 所以首尾相接的"长段 + 长段"也要一并判死.
+            hop_ok = True
+            _prev = airports.get(full[0])
+            _long_streak = 0
+            # 用"两个已知点之间直接算距离"的中转段来判断跨洲, 而不是靠逐点 near 解析:
+            # 逐点解析时同名点会被前一个点带偏, 长段变成"相邻短段", 检查等于失效.
+            _seq = [[airports.get(full[0]), full[0]]]
+            _pending = []
+            for _p in full[1:]:
+                # 这里的坐标只用来量跨度, 必须"全局无歧义"才好用: 带参考的解析会让
+                # 同名点被前一个点带着走, 长段被切成一堆短段, 检查也就形同虚设.
+                _c = airports.get(_p) or (_named_coord(_p) if _p in _get_fixes() else None)
+                if _c is None:
+                    _c = _resolve_within(full, _p)
+                if _c:
+                    _seq.append([_c, _p])
+                else:
+                    _pending.append(_p)
+            for (_c0, _n0), (_c1, _n1) in zip(_seq, _seq[1:]):
+                if not (_c0 and _c1):
+                    continue
+                seg = _nm_distance(_c0[0], _c0[1], _c1[0], _c1[1])
+                if seg > 1500.0:
+                    hop_ok = False
+                    if _DEBUG:
+                        print("[gate] 跨洲段 %s->%s %.0fnm (%s %s)"
+                              % (_n0, _n1, seg, sid_name, star_name))
+                    break
+            for _p in full[1:]:
+                _c = airports.get(_p) or _node_coord(_p, near=_prev)
+                if _c and _prev:
+                    seg = _nm_distance(_prev[0], _prev[1], _c[0], _c[1])
+                    dlon = abs(_c[1] - _prev[1]) * 60.0 * math.cos(math.radians((_c[0] + _prev[0]) / 2.0))
+                    dlat = abs(_c[0] - _prev[0]) * 60.0
+                    if seg > 2000.0 and dlon > dlat:
+                        hop_ok = False
+                        break
+                    if seg > 900.0:
+                        _long_streak += 1
+                        if _long_streak >= 2:
+                            hop_ok = False
+                            break
+                    else:
+                        _long_streak = 0
+                if _c:
+                    _prev = _c
+            if not hop_ok:
+                if _DEBUG:
+                    print("[gate] hop 跨洲: %s %s" % (sid_name, star_name))
+                continue
 
             # 评分: 总航程 + 逆行惩罚 + 端点接入代价; 超软阈值的绕飞按比例重罚.
             detour_penalty = max(0.0, detour_ratio - DETOUR_SOFT_RATIO) * total_nm * 3.0
             score = total_nm + 60.0 * rev_count + entry_penalty + exit_penalty + detour_penalty
 
-            if best is None or score < best[0]:
+            # 同一条走廊上的 (SID, STAR) 组合往往差不了几海里. 这种时候按点数挑,
+            # 否则会选到总里程只短 0.1%、却多出十几个 5-20nm 碎点的组合 —— MCDU 里
+            # 多敲十几个点没有任何好处. 只有明显更短(优 2.5% 以上)才压过点数.
+            if best is None or score < best[0] * 0.975:
+                best = (score, full, (sid_name, star_name, len(middle)))
+            elif score <= best[0] * 1.025 and len(full) < len(best[1]):
                 best = (score, full, (sid_name, star_name, len(middle)))
         if tried >= max_pairs:
             break
 
     # --- 7. 兜底 ---
     # 7a. 有候选但全部超过绕飞上限: 返回绕飞最小的那条, 至少保证航路真实可用.
+    # 这条路径没走过候选阶段的去重/折返清理, 出口前补一遍, 否则会出现
+    # "PAIRS 走了一遍又原路走回来"的双倍里程(曾经输出过 285 个点).
     if best is None and lenient is not None:
-        return lenient[1]
+        # lenient 是"所有候选都被闸门毙掉后绕飞最小的一条", 它本身从没通过几何校验:
+        # 曾出现 EGLL->KJFK 返回 LON NAKHA MEOVA ADBAG(云南) -> BUBSU -> DAL -> 纽约,
+        # 绕飞 4.73 倍. 出口前再查一次逆向往返, 不合格就放弃, 交给 7b 的最近航路点兜底.
+        _len_pts = []
+        _lp = dep_coord
+        for _p in lenient[1][1:-1]:
+            _c = airports.get(_p) or _node_coord(_p, near=_lp)
+            if _c:
+                _len_pts.append(_c)
+                _lp = _c
+        if len(_len_pts) >= 2:
+            _bad_nm, _tot_nm2 = _reverse_run_nm([dep_coord] + _len_pts + [arr_coord])
+            if _tot_nm2 > 0 and _bad_nm > max(150.0, _tot_nm2 * 0.15):
+                if _DEBUG:
+                    print("[fallback] lenient 逆向 %.0fnm/%.0fnm, 放弃"
+                          % (_bad_nm, _tot_nm2))
+                lenient = None
+    if best is None and lenient is not None:
+        cand = _undo_backtrack(list(lenient[1]))
+        if len(cand) > 4:
+            head, inner, tailp = cand[0], cand[1:-1], cand[-1]
+            inner = _sparsify_nodes(inner, max_nm=SPARSE_MAX_FALLBACK_NM,
+                                    max_dev_nm=SPARSE_MAX_FALLBACK_NM / 4.0)
+            cand = _dedupe_consecutive([head] + inner + [tailp])
+        if _DEBUG:
+            print("[fallback] lenient 路径 %d 点 -> %d 点" % (len(lenient[1]), len(cand)))
+        return _sanitize_route(cand)
     # 7b. 完全没有可用 SID/STAR 组合: 机场 -> 最近航路点 -> 航路 -> 最近航路点 -> 机场.
     if best is None:
+        if _DEBUG:
+            print("[fallback] 无候选, 走最近航路点兜底")
         # 只挑真正有出边的节点, 否则会把单向航路终点当入口
         near_dep = [(d, n) for d, n in _nearest_airway_nodes(*dep_coord) if graph.get(n)]
         near_arr = [(d, n) for d, n in _nearest_airway_nodes(*arr_coord) if graph.get(n)]
         if not near_dep or not near_arr:
             return [origin, destination]                # 机场附近没有任何航路
-        path, _ = _dijkstra(graph, near_dep[0][1], near_arr[0][1], REVERSE_PENALTY)
+        path, _ = _dijkstra_hop(graph, near_dep[0][1], near_arr[0][1], REVERSE_PENALTY,
+                                target_ref=arr_coord)
+        if not path or len(path) > FALLBACK_MAX_HOPS:
+            # 跳数太多说明跳跃图在这里不连通(大量同名点解不出坐标), 退回逐边路径,
+            # 之后由几何稀疏化把点列压到 70-200nm.
+            path, _ = _dijkstra(graph, near_dep[0][1], near_arr[0][1], REVERSE_PENALTY)
         if not path:
             return [origin, destination]
-        return _dedupe_consecutive([origin] + path + [destination])
+        # 先展开成逐段真实航迹(每段带上真实航路名), 再做几何稀疏化
+        detailed = _path_from_hop_path(path)
+        if len(detailed) >= 2:
+            detailed = _undo_backtrack(detailed)
+            detailed = _sparsify_nodes(detailed, max_nm=SPARSE_MAX_FALLBACK_NM,
+                                       max_dev_nm=SPARSE_MAX_FALLBACK_NM / 4.0)
+        else:
+            detailed = path
+        # 兜底路径同样要过反向校验: 这一段没有经过候选循环的任何闸门,
+        # EGLL->KJFK 曾在这里返回 LON NAKHA(云南) MEOVA ADBAG LXI ... DAL ...,
+        # 绕飞 4.73 倍. 有逆向航段就放弃, 只给起降两点, 也好过给一条飞不出来的航路.
+        _d_pts = []
+        _dp = dep_coord
+        for _p in detailed[1:-1]:
+            _c = airports.get(_p) or _node_coord(_p, near=_dp)
+            if _c:
+                _d_pts.append(_c)
+                _dp = _c
+        if len(_d_pts) >= 2:
+            _bad_nm, _tot_nm2 = _reverse_run_nm([dep_coord] + _d_pts + [arr_coord])
+            if _tot_nm2 > 0 and _bad_nm > max(150.0, _tot_nm2 * 0.15):
+                if _DEBUG:
+                    print("[fallback] 最近航路点兜底逆向 %.0fnm/%.0fnm, 放弃"
+                          % (_bad_nm, _tot_nm2))
+                return _sanitize_route([origin, destination])
+        return _sanitize_route(_dedupe_consecutive([origin] + detailed + [destination]))
 
-    return best[1]
+    if _DEBUG:
+        print("[selected] 正常候选 (%d 点) SID=%s STAR=%s" % (len(best[1]), best[2][0], best[2][1]))
+    return _sanitize_route(best[1])
+
+
+def _path_from_hop_path(start_and_hops):
+    """
+    把稀疏路径还原成逐段真实航迹: 对每一跳在两个落点之间跑一次逐边最短路,
+    这样每一段都有真实航路名, 总航程/绕飞比也不会因为"拉直线"而失真.
+
+    输入 [起点, "A\x00>B", ...] 或 [起点, B, C, ...] 均可.
+    某一跳还原失败时直接落到该跳终点: 宁可少一个点, 也不把航路连错.
+    """
+    if not start_and_hops:
+        return []
+    graph = _get_airways()
+    out = [start_and_hops[0]]
+    cur = start_and_hops[0]
+    for item in start_and_hops[1:]:
+        if not isinstance(item, str):             # 防御: 非字符串项不参与拼接
+            continue
+        if _ARROW in item:
+            a, b = item.split(_ARROW)
+        else:
+            a, b = cur, item
+        if a != cur:                              # 边序列与本跳起点对不上, 直接跳过去
+            out.append(b)
+            cur = b
+            continue
+        # 逐边还原用"逆向也允许"的代价: 跳跃边本身就是按无向邻接生成的,
+        # 严格按发布方向还原会把一条直跳拆成绕半个终端区的大弯
+        # (BETUD->REKLU 因此从 510nm 变成 860nm).
+        detail, _ = _dijkstra(graph, a, b, 1.0, target_ref=_node_coord(b))
+        if detail:
+            out.extend(p for p in detail[1:] if p != cur)
+        else:
+            out.append(b)
+        cur = b
+    return out
+
+
+def _sanitize_route(route):
+    """
+    出口处的最后一道过滤: 任何非字符串或带内部跳跃标记的点都不许出现在结果里.
+    正常拼接不会产生这种东西, 但兜底分支多, 出口统一挡一次最省事.
+
+    顺便去掉"兜了一圈又回到同一个点"的非相邻重复: ZUUU->ZGGG 曾输出
+    WFX BUVUR WFX BONPI, 飞机要在 WFX 上空绕一圈再走, MCDU 里就是一条回折航路.
+    保留第一次出现, 后段整段重复的(真正闭合的环)才截掉.
+    """
+    out = [p for p in (route or []) if isinstance(p, str) and _ARROW not in p]
+    if len(out) < 4:
+        return out
+    seen = {}
+    for i, p in enumerate(out):
+        if p in seen:
+            # 回到已访问的点: 中间那段是绕出去又绕回来的环, 整段丢掉, 从第一次
+            # 出现处直接接到 i+1, 再从头扫描(可能还有别的环).
+            first = seen[p]
+            return _sanitize_route(out[:first + 1] + out[i + 1:])
+        seen[p] = i
+    return out
 
 
 # ============================ 航路名展开 (可选辅助) ============================
@@ -984,8 +2071,8 @@ if __name__ == "__main__":
     import sys
     import time
 
-    dep = sys.argv[1] if len(sys.argv) > 1 else "EDDF"
-    arr = sys.argv[2] if len(sys.argv) > 2 else "EGLL"
+    dep = sys.argv[1] if len(sys.argv) > 1 else "EKCH"
+    arr = sys.argv[2] if len(sys.argv) > 2 else "LOWW"
     t0 = time.time()
     r = find_route(dep, arr)
     print(f"{dep} -> {arr}  ({len(r)} 个点, {time.time() - t0:.2f}s)")
