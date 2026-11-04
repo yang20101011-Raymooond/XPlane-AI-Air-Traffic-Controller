@@ -59,4 +59,46 @@ def match_sid_rw(possible_sids, cifp_path, dep_icao):
 
     return sid_to_runway
 
+def get_STAR(icao, star_startpoint,cifp_path):
+    if(not icao or not star_startpoint):
+        return []
 
+    path = os.path.join(cifp_path, f"{icao.upper()}.dat")
+    stars = set()
+    if(os.path.exists(path) == True):
+        try:
+            with open(path, encoding="utf-8", errors="ignore") as f:
+                for i in f:
+                    if(not i.startswith("STAR:")):
+                        continue
+                    arr = i.split(",")
+                    if(len(arr) < 4):
+                        continue
+                    star_name = arr[2].strip()
+                    end_point = arr[4].strip()
+                    if(end_point == star_startpoint):
+                        stars.add(star_name)
+
+        except OSError:
+            return []
+    result = sorted(stars)
+    return result
+
+def match_star_rw(possible_stars, cifp_path, arr_icao):
+    star_to_runway = {}
+    path = os.path.join(cifp_path, f"{arr_icao.upper()}.dat")
+    
+    for index in possible_stars:
+        STAR = index
+        with open (path, encoding="utf-8", errors="ignore") as f:
+            for i in f:
+                arr = i.split(",")
+                if(len(arr) < 4):
+                    continue
+                star_name = arr[2].strip()
+                if(star_name == STAR):
+                    rw_name = arr[3].strip()
+                    star_to_runway[STAR] = rw_name
+                    break
+
+    return star_to_runway
