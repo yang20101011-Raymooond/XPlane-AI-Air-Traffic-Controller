@@ -130,6 +130,15 @@ print("[debug] SIDs available for this route are: ", SID_text)
 SID_CON_RW = match_sid_rw(possibleSID, CIFP_DIR, DEP_ICAO)###return a dictionary of SID and its corresponding runway, key is SID, value is runway
 print("[debug] SID and its corresponding runway possible are: ", json.dumps(SID_CON_RW))
 
+possibleSTAR = get_STAR(ARR_ICAO, ROUTE_arr[-2], CIFP_DIR)##return a list of possible STAR for the arrival airport and the STAR startpoint
+STAR_text = "STARs available are: " + ", ".join(possibleSTAR)
+
+print("[debug] STARs available for this route are: ", STAR_text)
+
+STAR_CON_RW = match_star_rw(possibleSTAR, CIFP_DIR, ARR_ICAO)###return a dictionary of STAR and its corresponding runway, key is STAR, value is runway
+print("[debug] STAR and its corresponding runway possible are: ", json.dumps(STAR_CON_RW))
+
+
 APT_COOR = rf._node_coord(ROUTE_arr[0], near=None)
 SID_END_COOR = rf._node_coord(ROUTE_arr[1], near=APT_COOR)
 APT2_COOR = rf._node_coord(ROUTE_arr[-1], near=None)
@@ -191,7 +200,7 @@ while True:
             else:
                 init_alt = 6000 ##set defult value
     except:
-        time.sleep(0.5)
+        pass
 
     input_Pilot = None
     try:
@@ -241,7 +250,7 @@ while True:
         else:
             if(init_alt - alt <= 200):
                 if(isClearToCruiseAlt.active == False):
-                    print(AIRCRAFT_REG, ", Climb and maintain to crusie altitude", crusie_alt_fl)
+                    print(AIRCRAFT_REG, ", Climb and maintain to crusie altitude FL", crusie_alt_fl)
                     last_remind_cruiseC = time.perf_counter()
                     _func_Readback()
                     isClearToCruiseAlt.active = True
@@ -316,6 +325,7 @@ while True:
                     '    "callsign": "...",\n'
                     '    "runway": "...",\n'
                     '    "SID": "...",\n'
+                    '    "STAR": "...",\n'
                     '    "Waypoints in route": "...",\n'
                     '    "initial_climb_ft": n,\n'
                     '    "cruise_altitude_ft": n,\n'
@@ -327,6 +337,7 @@ while True:
                     "in such form, addition if needed, but MUST contains and say these followings, "
                     "if users does not state their runway or SID or following informations,"
                     "you must assign to them."
+                    "Assign the STAR in json format, but do not say it in the speech."
                     "But if the response is not a clearance, "
                     "respond the 'data' as {},"
                     "You will recieve both flight data and players request.Players may speech to text, if you recieve"
@@ -334,7 +345,7 @@ while True:
                     
                     "YOU MUST CHOOSE THE SIDS GIVEN BELOW, THEN THE RUWAY YOU GIVE SHOULD CORRESPOND TO THE SID YOU CHOOSE, THE CORRELATION WILL BE GIVEN, DO NOT MAKE UO SIDS OR RUNWAYS"
                     "YOUR ROUTE GIVEN MUST BE WHAT I GIVE YOU, DO NOT MAKE UP ROUTES"},
-                    {"role": "user", "content": SID_text + json.dumps(SID_CON_RW) + json.dumps(ROUTE_arr) + json.dumps(flight_data) + input_Pilot + pilotSays},
+                    {"role": "user", "content": SID_text + json.dumps(SID_CON_RW) + json.dumps(ROUTE_arr) + STAR_text + json.dumps(STAR_CON_RW) + json.dumps(flight_data) + input_Pilot + pilotSays},
                 ],
                 response_format={"type": "json_object"},
                 stream=False,
