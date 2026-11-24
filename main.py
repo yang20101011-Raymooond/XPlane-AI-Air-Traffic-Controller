@@ -26,6 +26,7 @@ speech_model = whisper.load_model("small")
 AIATC_DIR = os.environ.get("AIATC_DIR", os.path.dirname(os.path.abspath(__file__)))
 FLIGHT_DATA_PATH = os.path.join(AIATC_DIR, "flight_data.json")
 CLEARANCE_PATH = os.path.join(AIATC_DIR, "clearance.json")
+FLIGHT_CONDITION_PATH = os.path.join(AIATC_DIR, "flight_conditions.json")
 
 ## X-Plane 导航数据目录：默认 ~/X-Plane 12/Resources/default data，可用环境变量 XP_DATA_DIR 覆盖。
 XP_DATA_DIR = os.environ.get(
@@ -33,6 +34,9 @@ XP_DATA_DIR = os.environ.get(
     os.path.expanduser("~/X-Plane 12/Resources/default data"),
 )
 CIFP_DIR = os.path.join(XP_DATA_DIR, "CIFP")
+
+with open(FLIGHT_CONDITION_PATH, "w", encoding="utf-8") as f:
+    json.dump({}, f, ensure_ascii=False, indent=2)
 
 user_input = queue.Queue()##create a queue for input
 
@@ -202,6 +206,12 @@ while True:
     except:
         pass
 
+    try:
+        with open(FLIGHT_CONDITION_PATH) as f:
+            flight_conditions = json.load(f)
+    except:
+        pass
+
     input_Pilot = None
     try:
         input_Pilot = user_input.get(timeout=0.02)##get input value from the queue, if none, continue waiting
@@ -281,7 +291,8 @@ while True:
             decideDirectto(airlat, airlon, CLEARANCE_PATH, AIRCRAFT_REG)
             last_remind_offc = time.perf_counter()
             isRemindOffcourse.active = True
-        if(now_offc - last_remind_offc >= 120):
+            _func_Readback()
+        if(now_offc - last_remind_offc >= 360):
             decideDirectto(airlat, airlon, CLEARANCE_PATH, AIRCRAFT_REG)
             last_remind_offc = time.perf_counter()
 
@@ -294,18 +305,65 @@ while True:
                     "frame your words in professional aviation radio communication form and commands."
                     "Player have entered requests, respond professionally and add greetings if needed"
                     "or imitated real ATC. You will recieve both flight data and players request, flight clearance"
-                    "will also be attached.r"
+                    "will also be attached."
+                    "format your response in json and only respond with the"
+                    "json text in such format"
+                    "{\n"
+                    '  "speech": "what you say to the pilot, natural language, described above",\n'
+                    '  "conditions": {\n'
+                    '    "emergency": "type of emergency aircraft encounters, {} if none",\n'
+                    '    "diverge": "ICAO of divering airport, {} if none",\n'
+                    '    "alternate_cruise_altitude_ft": "assign only if emergency or if pilot requests, {} if none",\n'
+                    '    "direct_to_waypoint": "fill it only if pilot requests and is allowed, and value must be valid ICAO code existed in the route, if text to speech interpret wrong alphabet readings, correct it if you are sure about your speculation, or else ask player to say again, {} if none",\n'
+                    "  }\n"
+                    "}\n"  
                     " Players may speech to text, if you recieve"
-                    "text formed numbers and ICAO phonetic alphabet, response normally without text form"},
+                    "text with errors, try to imply the meaning based on the context."
+                    "If there are no conditions happend listed above AT ALL, respond the 'conditions' as {}"
+                    "For the DIRECT TO request, you will recieve a bool judgement if pilot is allowed to direct, fill the 'direct_to_waypoint' with the waypoint ICAO if allowed, else fill it with {}"
+                    },
                     {"role": "user", "content": json.dumps(flight_data) + input_Pilot + 
-                     pilotSays + json.dumps(clearance_data)},
+                     pilotSays + json.dumps(clearance_data) + "DIRECT PERMISSION: " + str(judge_offcourse.active) + "\n" + json.dumps(flight_conditions)},
                 ],
+                response_format={"type": "json_object"},
                 stream=False,
                 reasoning_effort="high",
                 extra_body={"thinking": {"type": "enabled"}}
             )
-                
-            print(response.choices[0].message.content)
+
+            try:
+                result = json.loads(response.choices[0].message.content)
+            except json.JSONDecodeError:
+                print("[system] API response formating failed, please try again")
+                continue
+
+            response_pilot = result["speech"]
+            flight_conditions = result.get("conditions")
+            print(response_pilot)
+
+            if(flight_conditions != {} and flight_conditions is not None):
+                with open(FLIGHT_CONDITION_PATH, "w", encoding="utf-8") as f:
+                    json.dump(flight_conditions, f, ensure_ascii=False, indent=2)
+                direct_icao = flight_conditions.get("direct_to_waypoint")
+                if(direct_icao != {} and direct_icao is not None):
+                    current_airway, a, b = get_current_airway(airlat, airlon, CLEARANCE_PATH)
+                    ori_icao = current_airway[0]
+                    route_temp = clearance_data["Waypoints in route"].split() if isinstance(clearance_data["Waypoints in route"], str) else list(clearance_data["Waypoints in route"])
+
+                    if(direct_icao in route_temp):
+                        ori_index = route_temp.index(ori_icao)
+                        direct_icao_index = route_temp.index(direct_icao)
+                        
+                        if(direct_icao_index > ori_index):
+                            del route_temp[ori_index+1:direct_icao_index]
+                            clearance_data["Waypoints in route"] = " ".join(route_temp)
+                            with open(CLEARANCE_PATH, "w", encoding="utf-8") as f:
+                                json.dump(clearance_data, f, ensure_ascii=False, indent=2)
+                        else:
+                            print(AIRCRAFT_REG, ", negative, direct to ", direct_icao, " is not granted, resume own navigation, routing comfirmation as filed," + clearance_data["Waypoints in route"])
+
+            _func_Readback()
+
         else:
             response = client.chat.completions.create(
                 model="deepseek-flash",
@@ -326,7 +384,7 @@ while True:
                     '    "runway": "...",\n'
                     '    "SID": "...",\n'
                     '    "STAR": "...",\n'
-                    '    "Waypoints in route": "...",\n'
+                    '    "Waypoints in route": "...(points seperated by spaces)",\n'
                     '    "initial_climb_ft": n,\n'
                     '    "cruise_altitude_ft": n,\n'
                     '    "squawk": "..."\n'
@@ -353,17 +411,22 @@ while True:
                 extra_body={"thinking": {"type": "enabled"}}
             )
 
-            result = json.loads(response.choices[0].message.content)
+            try:
+                result = json.loads(response.choices[0].message.content)
+            except json.JSONDecodeError:
+                print("[system] API response formating failed, please try again")
+                continue
+
             response_pilot = result["speech"] 
             print(response_pilot)
             ##print(result)
-            clearance = result["data"]
+            clearance = result.get("data")
             
             input_Pilot = None
             ##write clearance to json file, clearance is already similar to json format, sub json fie of "data"
             
             
-            if(clearance.get('runway')):
+            if(clearance is not None and clearance.get('runway')):
 
                 ###check if the waypoints in route is the same as the one we generated, if not, replace it with the one we generated
                 if(clearance["Waypoints in route"].split() != ROUTE_arr):
@@ -424,6 +487,11 @@ while True:
                           ", squawk ", squawk, ", readback not necessary, contact when ready for departure")
                 
                 isClearanced.active = True
+
+            elif(clearance == None):
+                print("[system] API response formating failed, please try again")
+            else: 
+                pass
 
 
 
