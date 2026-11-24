@@ -22,6 +22,7 @@ flight_data.json
 flight_debug.log
 debug_log.txt
 clearance.json
+flight_conditions.json
 
 # ---- 手工编译的临时文件 ----
 *.bak.*
